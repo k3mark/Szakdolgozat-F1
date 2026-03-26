@@ -2,10 +2,13 @@ package com.example.f1_application.ui.search
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
@@ -15,13 +18,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.f1_application.data.model.CircuitStats
 import com.example.f1_application.data.model.DriverStats
 import com.example.f1_application.data.repository.F1Repository
+import com.example.f1_application.ui.common.*
+import com.example.f1_application.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,63 +41,124 @@ fun SearchScreen(repository: F1Repository) {
     val circuitResult by viewModel.circuitResult.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val searchHistory by viewModel.searchHistory.collectAsState()
-
-    // Eredmény látható-e?
     val hasResult = driverResult != null || circuitResult != null
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(F1Dark)
+            .padding(16.dp)
+    ) {
+        // ── CÍM ──────────────────────────────────────────────────
+        Text(
+            text = "KERESÉS",
+            style = MaterialTheme.typography.headlineLarge,
+            color = F1Red
+        )
+        Text(
+            text = "PILÓTA ÉS PÁLYA ADATOK",
+            style = MaterialTheme.typography.labelLarge,
+            color = F1TextHint,
+            letterSpacing = 3.sp
+        )
+        Spacer(Modifier.height(16.dp))
 
-        // --- KERESŐ MEZŐ ---
+        // ── KERESŐ MEZŐ ──────────────────────────────────────────
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { viewModel.onQueryChange(it) },
-            label = { Text("Keress pilótára vagy pályára") },
+            placeholder = { Text("Pl. Verstappen, Hungaroring...", color = F1TextHint) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            leadingIcon = { Icon(Icons.Default.Search, null) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = F1Red,
+                unfocusedBorderColor = F1Border,
+                focusedTextColor = F1TextPrim,
+                unfocusedTextColor = F1TextPrim,
+                cursorColor = F1Red,
+                focusedContainerColor = F1Surface,
+                unfocusedContainerColor = F1Surface
+            ),
+            leadingIcon = {
+                Icon(Icons.Default.Search, null, tint = F1TextHint)
+            },
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(onClick = { viewModel.onQueryChange("") }) {
-                        Icon(Icons.Default.Clear, null)
+                        Icon(Icons.Default.Clear, null, tint = F1TextHint)
                     }
                 }
-            }
+            },
+            shape = RoundedCornerShape(8.dp)
         )
+
+        Spacer(Modifier.height(8.dp))
 
         Button(
             onClick = { viewModel.performSearch() },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = F1Red,
+                contentColor = F1TextPrim
+            ),
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Keresés")
+            Icon(Icons.Default.Search, null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = "KERESÉS",
+                style = MaterialTheme.typography.labelLarge,
+                letterSpacing = 2.sp
+            )
         }
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Spacer(Modifier.height(8.dp))
 
-            // --- BETÖLTÉS ---
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+
+            // Betöltés
             item {
                 AnimatedVisibility(visible = isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally)
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = F1Red,
+                            modifier = Modifier.size(28.dp),
+                            strokeWidth = 2.dp
+                        )
+                    }
                 }
             }
 
-            // --- NEM TALÁLHATÓ ---
+            // Nincs találat
             item {
                 AnimatedVisibility(
                     visible = !isLoading && !hasResult && searchQuery.isNotEmpty(),
                     enter = fadeIn() + slideInVertically(),
                     exit = fadeOut()
                 ) {
-                    Text(
-                        text = "Nincs találat: \"$searchQuery\"",
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(F1Surface)
+                            .border(1.dp, F1Red.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Nincs találat: \"$searchQuery\"",
+                            color = F1Red,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
 
-            // --- PILÓTA EREDMÉNY ---
+            // Pilóta eredmény
             item {
                 AnimatedVisibility(
                     visible = driverResult != null,
@@ -103,7 +172,7 @@ fun SearchScreen(repository: F1Repository) {
                 }
             }
 
-            // --- PÁLYA EREDMÉNY ---
+            // Pálya eredmény
             item {
                 AnimatedVisibility(
                     visible = circuitResult != null,
@@ -117,27 +186,31 @@ fun SearchScreen(repository: F1Repository) {
                 }
             }
 
-            // --- ELŐZMÉNY SZEKCIÓ FEJLÉC ---
+            // Előzmény fejléc
             if (searchHistory.isNotEmpty() && !hasResult) {
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Korábbi keresések",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.secondary
+                            text = "KORÁBBI KERESÉSEK",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = F1TextHint
                         )
                         TextButton(onClick = { viewModel.clearHistory() }) {
-                            Text("Összes törlése", style = MaterialTheme.typography.labelSmall)
+                            Text(
+                                "Összes törlése",
+                                color = F1Red,
+                                style = MaterialTheme.typography.labelMedium
+                            )
                         }
                     }
                 }
 
-                // --- ELŐZMÉNY ELEMEK animálva ---
                 itemsIndexed(searchHistory) { index, item ->
                     AnimatedHistoryItem(
                         item = item,
@@ -159,9 +232,8 @@ fun AnimatedHistoryItem(
     onDelete: () -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }
-
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(index * 60L) // Soronként késleltetett megjelenés
+        kotlinx.coroutines.delay(index * 60L)
         visible = true
     }
 
@@ -172,49 +244,59 @@ fun AnimatedHistoryItem(
             animationSpec = tween(300)
         )
     ) {
-        Card(
+        val accentColor = when (item.resultType) {
+            "DRIVER" -> F1Red
+            "CIRCUIT" -> F1Gold
+            else -> F1TextHint
+        }
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onClick() },
-            colors = CardDefaults.cardColors(
-                containerColor = when (item.resultType) {
-                    "DRIVER" -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                    "CIRCUIT" -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                }
-            )
+                .clip(RoundedCornerShape(8.dp))
+                .background(F1Surface)
+                .border(1.dp, F1Border, RoundedCornerShape(8.dp))
+                .clickable { onClick() }
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Default.History,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(accentColor)
+            )
+            Spacer(Modifier.width(12.dp))
+            Icon(
+                Icons.Default.History,
+                contentDescription = null,
+                tint = F1TextHint,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = item.query,
+                    color = F1TextPrim,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
                 )
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(item.query, fontWeight = FontWeight.Medium)
-                    Text(
-                        text = when (item.resultType) {
-                            "DRIVER" -> "Pilóta"
-                            "CIRCUIT" -> "Pálya"
-                            else -> "Nincs találat"
-                        } + " • " + formatTimestamp(item.timestamp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Törlés",
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+                Text(
+                    text = when (item.resultType) {
+                        "DRIVER" -> "PILÓTA"
+                        "CIRCUIT" -> "PÁLYA"
+                        else -> "NINCS TALÁLAT"
+                    } + "  ·  " + formatTimestamp(item.timestamp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = F1TextHint
+                )
+            }
+            IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Törlés",
+                    tint = F1TextHint,
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }
@@ -225,60 +307,169 @@ fun formatTimestamp(timestamp: Long): String {
     return sdf.format(Date(timestamp))
 }
 
-// --- RESULT CARD-OK (változatlan marad) ---
+// ── PILÓTA EREDMÉNY KÁRTYA ─────────────────────────────────────────
 @Composable
 fun DriverResultCard(driver: DriverStats) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(driver.fullName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Text("Csapat: ${driver.currentTeam}", style = MaterialTheme.typography.bodyLarge)
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
-                    Text("Győzelmek: ${driver.wins}")
-                    Text("Dobogók: ${driver.podiums}")
-                    Text("Pole-ok: ${driver.totalPoles}")
-                }
-                Column {
-                    Text("Pontszám: ${driver.totalPoints}")
-                    Text("Legjobb hely: ${driver.bestPosition}.")
-                }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(F1Surface)
+            .border(1.dp, F1Border, RoundedCornerShape(8.dp))
+    ) {
+        // Bal piros csík
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .fillMaxHeight()
+                .background(F1Red)
+        )
+        Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 14.dp, bottom = 14.dp)) {
+            Text(
+                text = driver.fullName.uppercase(),
+                style = MaterialTheme.typography.headlineSmall,
+                color = F1TextPrim,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = driver.currentTeam,
+                style = MaterialTheme.typography.bodySmall,
+                color = F1Red,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(12.dp))
+            F1Divider()
+            Spacer(Modifier.height(12.dp))
+            // Stat sor 1
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                F1StatCell("GYŐZELEM", "${driver.wins}", F1Red, Modifier.weight(1f))
+                F1StatCell("DOBOGÓ", "${driver.podiums}", F1Gold, Modifier.weight(1f))
+                F1StatCell("POLE", "${driver.totalPoles}", F1Orange, Modifier.weight(1f))
+                F1StatCell("PONTOK", "${driver.totalPoints.toInt()}", F1TextPrim, Modifier.weight(1f))
             }
-            Text("Aktív évek: ${driver.activeYears}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+            Spacer(Modifier.height(10.dp))
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                Text(
+                    text = "Legjobb hely: ${driver.bestPosition}.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = F1TextSec
+                )
+                Text(
+                    text = driver.activeYears,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = F1TextHint,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
         }
     }
 }
 
+// ── PÁLYA EREDMÉNY KÁRTYA ──────────────────────────────────────────
 @Composable
 fun CircuitResultCard(circuit: CircuitStats) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(F1Surface)
+            .border(1.dp, F1Border, RoundedCornerShape(8.dp))
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(circuit.circuitName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
-                    Text("Pályahossz", style = MaterialTheme.typography.labelMedium)
-                    Text(circuit.trackLength ?: "Nincs adat", fontWeight = FontWeight.Bold)
-                }
-                Column {
-                    Text("Körök", style = MaterialTheme.typography.labelMedium)
-                    Text("${circuit.lapCount ?: "?"}", fontWeight = FontWeight.Bold)
-                }
-                Column {
-                    Text("Versenytáv", style = MaterialTheme.typography.labelMedium)
-                    Text(circuit.totalDistance ?: "Nincs adat", fontWeight = FontWeight.Bold)
-                }
+        // Bal arany csík
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .fillMaxHeight()
+                .background(F1Gold)
+        )
+        Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 14.dp, bottom = 14.dp)) {
+            Text(
+                text = circuit.circuitName.uppercase(),
+                style = MaterialTheme.typography.headlineSmall,
+                color = F1TextPrim,
+                fontWeight = FontWeight.Black
+            )
+            Spacer(Modifier.height(12.dp))
+            F1Divider()
+            Spacer(Modifier.height(12.dp))
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                F1StatCell("HOSSZ", circuit.trackLength ?: "–", F1Gold, Modifier.weight(1f))
+                F1StatCell("KÖRÖK", "${circuit.lapCount ?: "–"}", F1Red, Modifier.weight(1f))
+                F1StatCell("TÁVOLSÁG", circuit.totalDistance ?: "–", F1Orange, Modifier.weight(1f))
             }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            Text("Utolsó 5 év Pole-pozíciói:", fontWeight = FontWeight.Bold)
-            circuit.lastFivePoles.forEach { pole ->
-                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("${pole.year}: ${pole.driverName}")
-                    Text(pole.poleTime ?: "", style = MaterialTheme.typography.bodySmall)
+            if (circuit.lastFivePoles.isNotEmpty()) {
+                Spacer(Modifier.height(12.dp))
+                F1Divider()
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "POLE-POZÍCIÓK",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = F1TextHint
+                )
+                Spacer(Modifier.height(6.dp))
+                circuit.lastFivePoles.forEach { pole ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 3.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .clip(RoundedCornerShape(3.dp))
+                                    .background(F1Red)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "${pole.year}  ${pole.driverName}",
+                                color = F1TextPrim,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        Text(
+                            text = pole.poleTime ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = F1Gold,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
                 }
             }
         }
     }
+}
+
+// ── StatCell alias (a Common-ból importálva, de itt is definiálva a körkörös import ellen) ──
+@Composable
+fun F1StatCell(
+    label: String,
+    value: String,
+    valueColor: Color = F1Red,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = F1TextHint
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Black,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 16.sp
+            ),
+            color = valueColor
+        )
+    }
+}
+
+@Composable
+fun F1Divider(modifier: Modifier = Modifier) {
+    HorizontalDivider(modifier = modifier, thickness = 1.dp, color = F1Border)
 }
