@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.f1_application.data.model.DriverStats
 import com.example.f1_application.data.repository.F1Repository
 import com.example.f1_application.ui.theme.*
+import androidx.compose.foundation.clickable
 
 @Composable
 fun CompareScreen(repository: F1Repository) {
@@ -405,8 +406,3 @@ fun AnimatedCompareCell(
     }
 }
 
-// Clickable extension (nincs Foundation import konflikt miatt)
-private fun Modifier.clickable(onClick: () -> Unit) =
-    this.then(
-        androidx.compose.foundation.clickable(onClick = onClick)
-    )
