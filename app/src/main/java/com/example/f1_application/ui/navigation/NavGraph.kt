@@ -51,16 +51,16 @@ fun F1NavGraph(
             )
         }
         composable(Screen.Calendar.route) {
-            CalendarScreen(loggedInUser ?: "", repository)
+            CalendarScreen(loggedInUser ?: "", repository, navController)
         }
         composable(Screen.Standings.route) {
-            StandingsScreen(loggedInUser ?: "", repository)
+            StandingsScreen(loggedInUser ?: "", repository, navController)
         }
         composable(Screen.Search.route) {
-            SearchScreen(repository)
+            SearchScreen(repository, loggedInUser ?: "", navController)
         }
         composable(Screen.Compare.route) {
-            CompareScreen(repository)
+            CompareScreen(repository, loggedInUser ?: "", navController)
         }
         composable(Screen.Profile.route) {
             ProfileScreen(

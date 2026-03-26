@@ -4,10 +4,12 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -24,13 +26,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.f1_application.data.model.DriverStats
 import com.example.f1_application.data.repository.F1Repository
+import com.example.f1_application.ui.navigation.Screen
 import com.example.f1_application.ui.theme.*
-import androidx.compose.foundation.clickable
 
 @Composable
-fun CompareScreen(repository: F1Repository) {
+fun CompareScreen(repository: F1Repository, username: String, navController: NavController) {
     val viewModel: CompareViewModel = viewModel(factory = CompareViewModelFactory(repository))
     val driverA by viewModel.driverA.collectAsState()
     val driverB by viewModel.driverB.collectAsState()
@@ -48,8 +51,20 @@ fun CompareScreen(repository: F1Repository) {
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         item {
-            Text(text = "COMPARE", style = MaterialTheme.typography.headlineLarge, color = F1Red)
-            Text(text = "DRIVER HEAD-TO-HEAD", style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 3.sp)
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("COMPARE", style = MaterialTheme.typography.headlineLarge, color = F1Red)
+                    Text("DRIVER HEAD-TO-HEAD", style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 3.sp)
+                }
+                Box(
+                    modifier = Modifier.size(40.dp).clip(CircleShape).background(F1Surface)
+                        .border(2.dp, F1Red, CircleShape)
+                        .clickable { navController.navigate(Screen.Profile.route) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(username.take(2).uppercase(), style = MaterialTheme.typography.labelLarge, color = F1Red, fontWeight = FontWeight.Black)
+                }
+            }
         }
         item {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -59,7 +74,7 @@ fun CompareScreen(repository: F1Repository) {
         }
         if (driverHistory.isNotEmpty()) {
             item {
-                Text(text = "QUICK LOAD", style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 2.sp)
+                Text("QUICK LOAD", style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 2.sp)
                 Spacer(Modifier.height(6.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(driverHistory.take(8)) { histItem ->
@@ -71,7 +86,7 @@ fun CompareScreen(repository: F1Repository) {
                                     else viewModel.searchDriverB(histItem.query)
                                 }.padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
-                            Text(text = histItem.query, style = MaterialTheme.typography.labelMedium, color = F1TextSec)
+                            Text(histItem.query, style = MaterialTheme.typography.labelMedium, color = F1TextSec)
                         }
                     }
                 }
@@ -92,7 +107,7 @@ fun CompareScreen(repository: F1Repository) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("🏎", fontSize = 36.sp)
                         Spacer(Modifier.height(10.dp))
-                        Text(text = "Search for two drivers\nto compare them!", textAlign = TextAlign.Center, color = F1TextHint, style = MaterialTheme.typography.bodyMedium, lineHeight = 22.sp)
+                        Text("Search for two drivers\nto compare them!", textAlign = TextAlign.Center, color = F1TextHint, style = MaterialTheme.typography.bodyMedium, lineHeight = 22.sp)
                     }
                 }
             }
@@ -145,8 +160,8 @@ fun CompareTable(driverA: DriverStats?, driverB: DriverStats?) {
         Column(Modifier.padding(16.dp)) {
             Row(Modifier.fillMaxWidth()) {
                 Spacer(Modifier.weight(1.3f))
-                Text(text = driverA?.fullName?.split(" ")?.last()?.uppercase() ?: "–", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelLarge, color = F1Red, fontWeight = FontWeight.Black)
-                Text(text = driverB?.fullName?.split(" ")?.last()?.uppercase() ?: "–", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelLarge, color = F1Gold, fontWeight = FontWeight.Black)
+                Text(driverA?.fullName?.split(" ")?.last()?.uppercase() ?: "–", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelLarge, color = F1Red, fontWeight = FontWeight.Black)
+                Text(driverB?.fullName?.split(" ")?.last()?.uppercase() ?: "–", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelLarge, color = F1Gold, fontWeight = FontWeight.Black)
             }
             HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = F1Border)
             CompareRow("TEAM", driverA?.currentTeam, driverB?.currentTeam, higherIsBetter = false)
@@ -168,7 +183,7 @@ fun CompareRow(label: String, valueA: Any?, valueB: Any?, higherIsBetter: Boolea
     val bWins = aDouble != null && bDouble != null && if (higherIsBetter) bDouble > aDouble else bDouble < aDouble
 
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(text = label, modifier = Modifier.weight(1.3f), style = MaterialTheme.typography.labelSmall, color = F1TextHint)
+        Text(label, modifier = Modifier.weight(1.3f), style = MaterialTheme.typography.labelSmall, color = F1TextHint)
         AnimatedCompareCell(value = valueA?.toString() ?: "–", wins = aWins, winColor = F1Red, modifier = Modifier.weight(1f))
         AnimatedCompareCell(value = valueB?.toString() ?: "–", wins = bWins, winColor = F1Gold, modifier = Modifier.weight(1f))
     }
@@ -195,6 +210,6 @@ fun AnimatedCompareCell(value: String, wins: Boolean, winColor: Color, modifier:
     val bgAlpha by animateFloatAsState(targetValue = if (wins) 0.15f else 0f, animationSpec = tween(600), label = "bgAlpha")
 
     Box(modifier = modifier.clip(RoundedCornerShape(4.dp)).background(winColor.copy(alpha = bgAlpha)).padding(vertical = 4.dp, horizontal = 4.dp), contentAlignment = Alignment.Center) {
-        Text(text = shownValue, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = if (wins) FontWeight.Black else FontWeight.Normal), color = if (wins) winColor else F1TextSec, modifier = Modifier.fillMaxWidth())
+        Text(shownValue, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = if (wins) FontWeight.Black else FontWeight.Normal), color = if (wins) winColor else F1TextSec, modifier = Modifier.fillMaxWidth())
     }
 }

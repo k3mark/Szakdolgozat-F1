@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -25,16 +26,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.f1_application.data.model.CircuitStats
 import com.example.f1_application.data.model.DriverStats
 import com.example.f1_application.data.repository.F1Repository
 import com.example.f1_application.ui.common.*
+import com.example.f1_application.ui.navigation.Screen
 import com.example.f1_application.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun SearchScreen(repository: F1Repository) {
+fun SearchScreen(repository: F1Repository, username: String, navController: NavController) {
     val viewModel: SearchViewModel = viewModel(factory = SearchViewModelFactory(repository))
     val searchQuery by viewModel.searchQuery.collectAsState()
     val driverResult by viewModel.driverResult.collectAsState()
@@ -49,8 +52,21 @@ fun SearchScreen(repository: F1Repository) {
             .background(F1Dark)
             .padding(16.dp)
     ) {
-        Text(text = "SEARCH", style = MaterialTheme.typography.headlineLarge, color = F1Red)
-        Text(text = "DRIVER & CIRCUIT DATA", style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 3.sp)
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("SEARCH", style = MaterialTheme.typography.headlineLarge, color = F1Red)
+                Text("DRIVER & CIRCUIT DATA", style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 3.sp)
+            }
+            Box(
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(F1Surface)
+                    .border(2.dp, F1Red, CircleShape)
+                    .clickable { navController.navigate(Screen.Profile.route) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(username.take(2).uppercase(), style = MaterialTheme.typography.labelLarge, color = F1Red, fontWeight = FontWeight.Black)
+            }
+        }
+
         Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
@@ -85,7 +101,7 @@ fun SearchScreen(repository: F1Repository) {
         ) {
             Icon(Icons.Default.Search, null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text(text = "SEARCH", style = MaterialTheme.typography.labelLarge, letterSpacing = 2.sp)
+            Text("SEARCH", style = MaterialTheme.typography.labelLarge, letterSpacing = 2.sp)
         }
 
         Spacer(Modifier.height(8.dp))
@@ -104,7 +120,7 @@ fun SearchScreen(repository: F1Repository) {
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
                             .background(F1Surface).border(1.dp, F1Red.copy(alpha = 0.3f), RoundedCornerShape(8.dp)).padding(16.dp)
                     ) {
-                        Text(text = "No results for: \"$searchQuery\"", color = F1Red, style = MaterialTheme.typography.bodyMedium)
+                        Text("No results for: \"$searchQuery\"", color = F1Red, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
@@ -121,7 +137,7 @@ fun SearchScreen(repository: F1Repository) {
             if (searchHistory.isNotEmpty() && !hasResult) {
                 item {
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "RECENT SEARCHES", style = MaterialTheme.typography.labelLarge, color = F1TextHint)
+                        Text("RECENT SEARCHES", style = MaterialTheme.typography.labelLarge, color = F1TextHint)
                         TextButton(onClick = { viewModel.clearHistory() }) {
                             Text("Clear all", color = F1Red, style = MaterialTheme.typography.labelMedium)
                         }
@@ -163,7 +179,7 @@ fun AnimatedHistoryItem(
             Icon(Icons.Default.History, contentDescription = null, tint = F1TextHint, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
-                Text(text = item.query, color = F1TextPrim, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                Text(item.query, color = F1TextPrim, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
                 Text(
                     text = when (item.resultType) {
                         "DRIVER" -> "DRIVER"
@@ -190,8 +206,8 @@ fun DriverResultCard(driver: DriverStats) {
     Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(F1Surface).border(1.dp, F1Border, RoundedCornerShape(8.dp))) {
         Box(modifier = Modifier.width(3.dp).fillMaxHeight().background(F1Red))
         Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 14.dp, bottom = 14.dp)) {
-            Text(text = driver.fullName.uppercase(), style = MaterialTheme.typography.headlineSmall, color = F1TextPrim, fontWeight = FontWeight.Black)
-            Text(text = driver.currentTeam, style = MaterialTheme.typography.bodySmall, color = F1Red, fontWeight = FontWeight.Bold)
+            Text(driver.fullName.uppercase(), style = MaterialTheme.typography.headlineSmall, color = F1TextPrim, fontWeight = FontWeight.Black)
+            Text(driver.currentTeam, style = MaterialTheme.typography.bodySmall, color = F1Red, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(12.dp))
             F1Divider()
             Spacer(Modifier.height(12.dp))
@@ -203,8 +219,8 @@ fun DriverResultCard(driver: DriverStats) {
             }
             Spacer(Modifier.height(10.dp))
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-                Text(text = "Best position: ${driver.bestPosition}.", style = MaterialTheme.typography.bodySmall, color = F1TextSec)
-                Text(text = driver.activeYears, style = MaterialTheme.typography.bodySmall, color = F1TextHint, fontFamily = FontFamily.Monospace)
+                Text("Best position: ${driver.bestPosition}.", style = MaterialTheme.typography.bodySmall, color = F1TextSec)
+                Text(driver.activeYears, style = MaterialTheme.typography.bodySmall, color = F1TextHint, fontFamily = FontFamily.Monospace)
             }
         }
     }
@@ -215,7 +231,7 @@ fun CircuitResultCard(circuit: CircuitStats) {
     Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(F1Surface).border(1.dp, F1Border, RoundedCornerShape(8.dp))) {
         Box(modifier = Modifier.width(3.dp).fillMaxHeight().background(F1Gold))
         Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 14.dp, bottom = 14.dp)) {
-            Text(text = circuit.circuitName.uppercase(), style = MaterialTheme.typography.headlineSmall, color = F1TextPrim, fontWeight = FontWeight.Black)
+            Text(circuit.circuitName.uppercase(), style = MaterialTheme.typography.headlineSmall, color = F1TextPrim, fontWeight = FontWeight.Black)
             Spacer(Modifier.height(12.dp))
             F1Divider()
             Spacer(Modifier.height(12.dp))
@@ -228,16 +244,16 @@ fun CircuitResultCard(circuit: CircuitStats) {
                 Spacer(Modifier.height(12.dp))
                 F1Divider()
                 Spacer(Modifier.height(10.dp))
-                Text(text = "POLE POSITIONS", style = MaterialTheme.typography.labelLarge, color = F1TextHint)
+                Text("POLE POSITIONS", style = MaterialTheme.typography.labelLarge, color = F1TextHint)
                 Spacer(Modifier.height(6.dp))
                 circuit.lastFivePoles.forEach { pole ->
                     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(modifier = Modifier.size(6.dp).clip(RoundedCornerShape(3.dp)).background(F1Red))
                             Spacer(Modifier.width(8.dp))
-                            Text(text = "${pole.year}  ${pole.driverName}", color = F1TextPrim, style = MaterialTheme.typography.bodySmall)
+                            Text("${pole.year}  ${pole.driverName}", color = F1TextPrim, style = MaterialTheme.typography.bodySmall)
                         }
-                        Text(text = pole.poleTime ?: "", style = MaterialTheme.typography.bodySmall, color = F1Gold, fontFamily = FontFamily.Monospace)
+                        Text(pole.poleTime ?: "", style = MaterialTheme.typography.bodySmall, color = F1Gold, fontFamily = FontFamily.Monospace)
                     }
                 }
             }
@@ -248,9 +264,9 @@ fun CircuitResultCard(circuit: CircuitStats) {
 @Composable
 fun F1StatCell(label: String, value: String, valueColor: Color = F1Red, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = F1TextHint)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = F1TextHint)
         Spacer(Modifier.height(2.dp))
-        Text(text = value, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, fontSize = 16.sp), color = valueColor)
+        Text(value, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, fontSize = 16.sp), color = valueColor)
     }
 }
 

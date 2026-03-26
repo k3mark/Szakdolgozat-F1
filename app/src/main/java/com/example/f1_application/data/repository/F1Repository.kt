@@ -1,7 +1,6 @@
 package com.example.f1_application.data.repository
 
 import android.content.Context
-import android.util.Log
 import com.example.f1_application.data.local.*
 import com.example.f1_application.data.model.*
 import com.example.f1_application.data.remote.RetrofitClient
@@ -18,7 +17,6 @@ class F1Repository(context: Context) {
     private val userDao = db.userDao()
     private val searchHistoryDao = db.searchHistoryDao()
 
-    // Segédfüggvény a nevek formázásához (pl. RED BULL -> Red Bull)
     fun toTitleCase(text: String?): String {
         if (text.isNullOrBlank()) return "Ismeretlen"
         return text.split(" ", "_", "-").filter { it.isNotEmpty() }.joinToString(" ") { word ->
@@ -26,7 +24,7 @@ class F1Repository(context: Context) {
         }
     }
 
-    // --- AUTH FUNKCIÓK ---
+    // --- AUTH ---
     suspend fun login(username: String, password: String): UserEntity? =
         userDao.getUser(username)?.takeIf { it.password == password }
 
@@ -58,11 +56,8 @@ class F1Repository(context: Context) {
     suspend fun toggleFavoriteTrack(username: String, trackId: String, gpName: String, circuitName: String) {
         val user = userDao.getUser(username) ?: return
         val isRem = user.favoriteTrackId == trackId
-
-        // Ha a két név megegyezik, csak egyet írunk ki, egyébként kombináljuk
         val combinedName = if (gpName.contains(circuitName, ignoreCase = true)) gpName
         else "$gpName ($circuitName)"
-
         userDao.updateUser(user.copy(
             favoriteTrackId = if (isRem) null else trackId,
             favoriteTrackName = if (isRem) null else combinedName
@@ -103,7 +98,7 @@ class F1Repository(context: Context) {
         if (circuitDao.getCircuitCount() > 0) return circuitDao.getAllCircuits()
         val all = mutableListOf<HypraceCircuit>()
         var page = 1
-        while(true) {
+        while (true) {
             val resp = api.getCircuits(25, page)
             if (resp.items.isEmpty()) break
             all.addAll(resp.items)
@@ -116,7 +111,9 @@ class F1Repository(context: Context) {
 
     suspend fun getDriverStandings(year: Int): List<HypraceDriverStanding> {
         val count = dao.getStandingsCount(year)
-        if (count > 0) return dao.getStandingsByYear(year).map { HypraceDriverStanding(it.position, it.points, it.driverId, it.driverName) }
+        if (count > 0) return dao.getStandingsByYear(year).map {
+            HypraceDriverStanding(it.position, it.points, it.driverId, it.driverName, it.teamName)
+        }
 
         val sId = getSeasonId(year) ?: return emptyList()
         val resp = api.getSeasonTeams(sId, 25)
@@ -124,16 +121,27 @@ class F1Repository(context: Context) {
         resp.items?.forEach { team ->
             team.drivers.filter { it.driverStatus != "Substitute" }.forEach { d ->
                 val fullName = toTitleCase("${d.firstName ?: ""} ${d.lastName ?: ""}")
-                toSave.add(StandingEntity(seasonYear = year, position = d.standing?.position, points = d.standing?.points, driverId = d.id, driverName = fullName, teamName = toTitleCase(team.name)))
+                toSave.add(StandingEntity(
+                    seasonYear = year,
+                    position = d.standing?.position,
+                    points = d.standing?.points,
+                    driverId = d.id,
+                    driverName = fullName,
+                    teamName = toTitleCase(team.name)
+                ))
             }
         }
         dao.insertStandings(toSave)
-        return toSave.map { HypraceDriverStanding(it.position, it.points, it.driverId, it.driverName) }.sortedBy { it.position ?: 99 }
+        return toSave.map {
+            HypraceDriverStanding(it.position, it.points, it.driverId, it.driverName, it.teamName)
+        }.sortedBy { it.position ?: 99 }
     }
 
     suspend fun getConstructorStandings(year: Int): List<HypraceConstructorStanding> {
         val count = dao.getConstructorStandingsCount(year)
-        if (count > 0) return dao.getConstructorStandingsByYear(year).map { HypraceConstructorStanding(it.position, it.points, it.teamId, it.teamName) }
+        if (count > 0) return dao.getConstructorStandingsByYear(year).map {
+            HypraceConstructorStanding(it.position, it.points, it.teamId, it.teamName)
+        }
 
         val sId = getSeasonId(year) ?: return emptyList()
         val resp = api.getSeasonTeams(sId, 25)
@@ -143,9 +151,10 @@ class F1Repository(context: Context) {
                 position = 0,
                 points = team.drivers.sumOf { it.standing?.points ?: 0.0 },
                 teamId = team.id,
-                teamName = toTitleCase(team.name) // JAVÍTVA: Nagybetűsítés
+                teamName = toTitleCase(team.name)
             )
-        }?.sortedByDescending { it.points ?: 0.0 }?.mapIndexed { i, e -> e.copy(position = i + 1) } ?: emptyList()
+        }?.sortedByDescending { it.points ?: 0.0 }
+            ?.mapIndexed { i, e -> e.copy(position = i + 1) } ?: emptyList()
 
         if (ranked.isNotEmpty()) dao.insertConstructorStandings(ranked)
         return ranked.map { HypraceConstructorStanding(it.position, it.points, it.teamId, it.teamName) }
@@ -156,19 +165,14 @@ class F1Repository(context: Context) {
         searchHistoryDao.getRecentSearches()
 
     suspend fun saveSearch(query: String, resultType: String) {
-        // Csak ha még nincs ugyanez a query elmentve
         if (searchHistoryDao.exists(query) == 0) {
-            searchHistoryDao.insertSearch(
-                SearchHistoryEntity(query = query, resultType = resultType)
-            )
+            searchHistoryDao.insertSearch(SearchHistoryEntity(query = query, resultType = resultType))
         }
     }
 
-    suspend fun deleteSearch(id: Int) =
-        searchHistoryDao.deleteSearch(id)
+    suspend fun deleteSearch(id: Int) = searchHistoryDao.deleteSearch(id)
 
-    suspend fun clearSearchHistory() =
-        searchHistoryDao.clearAll()
+    suspend fun clearSearchHistory() = searchHistoryDao.clearAll()
 
     // --- MAPPING ---
     private fun HypraceRace.toEntity(year: Int, driverMap: Map<String, String>, circuitInfo: CircuitEntity?, lapsCount: Int?): RaceEntity {
@@ -177,7 +181,7 @@ class F1Repository(context: Context) {
         return RaceEntity(
             id = id ?: "",
             name = raceName,
-            officialName = circuitInfo?.name ?: "Ismeretlen pálya", // JAVÍTVA: Pálya neve ide kerül
+            officialName = circuitInfo?.name ?: "Ismeretlen pálya",
             circuitId = circuitId ?: circuit?.id,
             startDate = startDate,
             endDate = endDate,
@@ -199,14 +203,18 @@ class F1Repository(context: Context) {
     private fun RaceEntity.toHypraceRace() = HypraceRace(
         id = id,
         raceName = name,
-        officialName = officialName, // Ez tartalmazza a pálya nevét
+        officialName = officialName,
         circuitId = circuitId,
         startDate = startDate,
         endDate = endDate,
         status = status,
         schedule = listOf(HypraceSchedule(type = "MainRace", eventStart = mainRaceDate)),
         winner = winnerName?.let { HypraceResultDriver(driverName = it) },
-        podium = listOfNotNull(p1Name?.let { HypraceResultDriver(driverName = it) }, p2Name?.let { HypraceResultDriver(driverName = it) }, p3Name?.let { HypraceResultDriver(driverName = it) }),
+        podium = listOfNotNull(
+            p1Name?.let { HypraceResultDriver(driverName = it) },
+            p2Name?.let { HypraceResultDriver(driverName = it) },
+            p3Name?.let { HypraceResultDriver(driverName = it) }
+        ),
         poleman = polemanName?.let { HypraceResultDriver(driverName = it) },
         poleTime = poleTime,
         trackLength = trackLength,
@@ -215,49 +223,31 @@ class F1Repository(context: Context) {
     )
 
     suspend fun getDriverStats(q: String): DriverStats? {
-        // 1. Megkeressük a pilótát a neve alapján az állások között
         val driverEntry = dao.getAllStandings().find {
             it.driverName?.contains(q, ignoreCase = true) == true
         }
-
-        // 2. Ha megvan, a pontos ID-ja alapján lekérjük az összesített statisztikáit
-        // Így a kereső is ugyanazt a logikát fogja használni, mint a kezdőlap
-        return driverEntry?.driverId?.let { id ->
-            getDriverStatsById(id)
-        }
+        return driverEntry?.driverId?.let { id -> getDriverStatsById(id) }
     }
 
     suspend fun updateUserInfo(oldUsername: String, newUsername: String, newPassword: String): Boolean {
         val user = userDao.getUser(oldUsername) ?: return false
-
-        // Létrehozzuk az új objektumot a régi kedvencekkel
-        val updatedUser = user.copy(
-            username = newUsername,
-            password = newPassword
-        )
-
+        val updatedUser = user.copy(username = newUsername, password = newPassword)
         return if (oldUsername == newUsername) {
-            // Ha csak jelszó változik, egyszerű frissítés
             userDao.updateUser(updatedUser)
             true
         } else {
-            // Ha a név változik (PrimaryKey), újat kell létrehozni
-            if (userDao.getUser(newUsername) != null) return false // Ha az új név már foglalt
-
+            if (userDao.getUser(newUsername) != null) return false
             userDao.registerUser(updatedUser)
-            userDao.deleteUser(user) // A régi rekord törlése
+            userDao.deleteUser(user)
             true
         }
     }
 
     suspend fun deleteAccount(username: String) {
         val user = userDao.getUser(username)
-        if (user != null) {
-            userDao.deleteUser(user)
-        }
+        if (user != null) userDao.deleteUser(user)
     }
 
-    // Kedvencek alaphelyzetbe állítása
     suspend fun resetFavorites(username: String) {
         val user = userDao.getUser(username) ?: return
         userDao.updateUser(user.copy(
@@ -271,12 +261,10 @@ class F1Repository(context: Context) {
         val q = query.trim()
         val allRaces = dao.getLastRacesForStats(q)
         if (allRaces.isEmpty()) return null
-
         val latest = allRaces.first()
         val combinedName = if (latest.name?.contains(latest.officialName ?: "", ignoreCase = true) == true)
             latest.name ?: "Ismeretlen"
         else "${latest.name} (${latest.officialName ?: "Ismeretlen pálya"})"
-
         return CircuitStats(
             circuitName = combinedName,
             trackLength = latest.trackLength,
@@ -295,7 +283,6 @@ class F1Repository(context: Context) {
         if (standings.isEmpty()) return null
         val races = dao.getAllRaces()
         val latest = standings.maxByOrNull { it.seasonYear }
-
         return DriverStats(
             fullName = latest?.driverName ?: "Ismeretlen",
             driverId = driverId,
@@ -309,13 +296,9 @@ class F1Repository(context: Context) {
         )
     }
 
-    // Csapat pontszámának lekérése az aktuális szezonban
     suspend fun getTeamPoints(teamId: String, year: Int): Double {
-        return dao.getConstructorStandingsByYear(year)
-            .find { it.teamId == teamId }?.points ?: 0.0
+        return dao.getConstructorStandingsByYear(year).find { it.teamId == teamId }?.points ?: 0.0
     }
-
-
 
     suspend fun getTeamHistory(teamId: String, currentYear: Int): List<TeamHistory> {
         val history = mutableListOf<TeamHistory>()
@@ -329,11 +312,9 @@ class F1Repository(context: Context) {
         return history
     }
 
-    // Pálya statisztika lekérése ID alapján
     suspend fun getCircuitStatsById(circuitId: String): CircuitStats? {
         val allRaces = dao.getAllRaces().filter { it.circuitId == circuitId }.sortedByDescending { it.year }
         if (allRaces.isEmpty()) return null
-
         val latest = allRaces.first()
         return CircuitStats(
             circuitName = if (latest.name?.contains(latest.officialName ?: "", true) == true) latest.name!!

@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -23,14 +24,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.f1_application.data.repository.F1Repository
 import com.example.f1_application.ui.theme.*
 import kotlinx.coroutines.launch
 import com.example.f1_application.data.model.HypraceConstructorStanding
+import com.example.f1_application.ui.navigation.Screen
+import com.example.f1_application.data.model.HypraceDriverStanding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StandingsScreen(username: String, repository: F1Repository) {
+fun StandingsScreen(username: String, repository: F1Repository, navController: NavController){
     val viewModel: StandingsViewModel = viewModel(factory = StandingsViewModelFactory(repository))
     val driverStandings by viewModel.driverStandings.collectAsState()
     val constructorStandings by viewModel.constructorStandings.collectAsState()
@@ -50,18 +54,22 @@ fun StandingsScreen(username: String, repository: F1Repository) {
             .background(F1Dark)
     ) {
         // ── HEADER ───────────────────────────────────────────────
+        // A header Column-t cseréld le erre:
         Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Text(
-                text = "STANDINGS",
-                style = MaterialTheme.typography.headlineLarge,
-                color = F1Red
-            )
-            Text(
-                text = "CHAMPIONSHIP STANDINGS",
-                style = MaterialTheme.typography.labelLarge,
-                color = F1TextHint,
-                letterSpacing = 3.sp
-            )
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("STANDINGS", style = MaterialTheme.typography.headlineLarge, color = F1Red)
+                    Text("CHAMPIONSHIP STANDINGS", style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 3.sp)
+                }
+                Box(
+                    modifier = Modifier.size(40.dp).clip(CircleShape).background(F1Surface)
+                        .border(2.dp, F1Red, CircleShape)
+                        .clickable { navController.navigate(Screen.Profile.route) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(username.take(2).uppercase(), style = MaterialTheme.typography.labelLarge, color = F1Red, fontWeight = FontWeight.Black)
+                }
+            }
         }
 
         // ── YEAR SELECTOR ────────────────────────────────────────
@@ -161,31 +169,30 @@ fun StandingsScreen(username: String, repository: F1Repository) {
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             if (viewType == StandingViewType.DRIVER) {
-                itemsIndexed(constructorStandings) { index, standing ->
-                    val s = standing as HypraceConstructorStanding
-                    val isFavorite = user?.favoriteTeamId == s.teamId
+                itemsIndexed(driverStandings) { index, standing: HypraceDriverStanding ->
+                    val isFavorite = user?.favoriteDriverId == standing.driverId
                     AnimatedStandingRow(
                         index = index,
-                        pos = s.position ?: 0,
-                        name = repository.toTitleCase(s.teamName ?: ""),
-                        sub = "",
-                        points = s.points ?: 0.0,
+                        pos = standing.position ?: 0,
+                        name = standing.driverName ?: "Unknown",
+                        sub = standing.teamName ?: "",
+                        points = standing.points ?: 0.0,
                         isFavorite = isFavorite,
                         onFavoriteToggle = {
                             scope.launch {
-                                repository.toggleFavoriteTeam(username, s.teamId ?: "", s.teamName ?: "")
+                                repository.toggleFavoriteDriver(username, standing.driverId ?: "", standing.driverName ?: "")
                                 user = repository.getUser(username)
                             }
                         }
                     )
                 }
             } else {
-                itemsIndexed(constructorStandings) { index, standing ->
+                itemsIndexed(constructorStandings) { index, standing: HypraceConstructorStanding ->
                     val isFavorite = user?.favoriteTeamId == standing.teamId
                     AnimatedStandingRow(
                         index = index,
                         pos = standing.position ?: 0,
-                        name = repository.toTitleCase(standing.teamName ?: ""),  // ← ?: "" hozzáadva
+                        name = repository.toTitleCase(standing.teamName ?: ""),
                         sub = "",
                         points = standing.points ?: 0.0,
                         isFavorite = isFavorite,

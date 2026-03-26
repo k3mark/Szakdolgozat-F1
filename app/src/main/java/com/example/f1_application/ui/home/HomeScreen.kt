@@ -56,7 +56,6 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // ── HEADER with profile avatar ────────────────────────────
         item {
             Spacer(Modifier.height(8.dp))
             Row(
@@ -76,7 +75,6 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
                         letterSpacing = 4.sp
                     )
                 }
-                // Profile avatar — navigates to Profile screen
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -96,7 +94,6 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
             }
         }
 
-        // ── NEXT GRAND PRIX ──────────────────────────────────────
         item {
             nextRace?.let { race ->
                 Box(
@@ -107,9 +104,7 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
                         .border(1.dp, F1Red.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
+                        modifier = Modifier.fillMaxWidth().padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         F1Badge("NEXT GRAND PRIX", color = F1Red)
@@ -138,17 +133,12 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
             }
         }
 
-        // ── FAVORITE DRIVER ──────────────────────────────────────
         item {
             F1SectionHeader("FAVORITE DRIVER")
-            if (favDriver != null) {
-                DriverResultCard(favDriver!!)
-            } else {
-                F1EmptyState("No favorite driver set.\nStar one in Standings!")
-            }
+            if (favDriver != null) DriverResultCard(favDriver!!)
+            else F1EmptyState("No favorite driver set.\nStar one in Standings!")
         }
 
-        // ── FAVORITE TEAM ────────────────────────────────────────
         item {
             F1SectionHeader("FAVORITE TEAM")
             if (favHistory.isNotEmpty()) {
@@ -160,42 +150,19 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
                         .background(F1Surface)
                         .border(1.dp, F1Border, RoundedCornerShape(8.dp))
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .width(3.dp)
-                            .fillMaxHeight()
-                            .background(F1Gold)
-                    )
+                    Box(Modifier.width(3.dp).fillMaxHeight().background(F1Gold))
                     Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 14.dp, bottom = 14.dp)) {
-                        Text(
-                            text = favTeamName ?: "Unknown team",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = F1TextPrim,
-                            fontWeight = FontWeight.Black
-                        )
+                        Text(favTeamName ?: "Unknown team", style = MaterialTheme.typography.headlineSmall, color = F1TextPrim, fontWeight = FontWeight.Black)
                         Spacer(Modifier.height(12.dp))
                         Row(Modifier.fillMaxWidth()) {
-                            F1DataTile(
-                                label = "POINTS (2026)",
-                                value = "${current.points.toInt()} PTS",
-                                valueColor = F1Gold,
-                                modifier = Modifier.weight(1f)
-                            )
-                            F1DataTile(
-                                label = "POSITION",
-                                value = "${current.position}. PLACE",
-                                valueColor = F1TextPrim,
-                                modifier = Modifier.weight(1f)
-                            )
+                            F1DataTile("POINTS (2026)", "${current.points.toInt()} PTS", F1Gold, Modifier.weight(1f))
+                            F1DataTile("POSITION", "${current.position}. PLACE", F1TextPrim, Modifier.weight(1f))
                         }
                     }
                 }
-            } else {
-                F1EmptyState("No favorite team set.\nStar one in Standings!")
-            }
+            } else F1EmptyState("No favorite team set.\nStar one in Standings!")
         }
 
-        // ── FAVORITE TRACK ───────────────────────────────────────
         item {
             F1SectionHeader("FAVORITE TRACK & RACE")
             if (favCircuit != null) {
@@ -210,32 +177,14 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "TIME LEFT UNTIL FAVORITE RACE",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = F1TextHint,
-                            textAlign = TextAlign.Center
-                        )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                        Text("TIME LEFT UNTIL FAVORITE RACE", style = MaterialTheme.typography.labelLarge, color = F1TextHint, textAlign = TextAlign.Center)
                         Spacer(Modifier.height(6.dp))
                         val alpha = pulsingAlpha()
-                        Text(
-                            text = favTrackTime,
-                            style = MaterialTheme.typography.displaySmall.copy(
-                                fontFamily = FontFamily.Monospace
-                            ),
-                            color = F1Orange.copy(alpha = alpha),
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
-                        )
+                        Text(favTrackTime, style = MaterialTheme.typography.displaySmall.copy(fontFamily = FontFamily.Monospace), color = F1Orange.copy(alpha = alpha), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                     }
                 }
-            } else {
-                F1EmptyState("No favorite track set.\nStar one in Calendar!")
-            }
+            } else F1EmptyState("No favorite track set.\nStar one in Calendar!")
             Spacer(Modifier.height(16.dp))
         }
     }
@@ -244,45 +193,19 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
 @Composable
 fun F1EmptyState(message: String) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(F1Surface)
-            .border(1.dp, F1Border, RoundedCornerShape(8.dp))
-            .padding(20.dp),
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+            .background(F1Surface).border(1.dp, F1Border, RoundedCornerShape(8.dp)).padding(20.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodySmall,
-            color = F1TextHint,
-            textAlign = TextAlign.Center,
-            lineHeight = 18.sp
-        )
+        Text(message, style = MaterialTheme.typography.bodySmall, color = F1TextHint, textAlign = TextAlign.Center, lineHeight = 18.sp)
     }
 }
 
 @Composable
-fun F1DataTile(
-    label: String,
-    value: String,
-    valueColor: androidx.compose.ui.graphics.Color = F1Red,
-    modifier: Modifier = Modifier
-) {
+fun F1DataTile(label: String, value: String, valueColor: androidx.compose.ui.graphics.Color = F1Red, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = F1TextHint
-        )
+        Text(label, style = MaterialTheme.typography.labelSmall, color = F1TextHint)
         Spacer(Modifier.height(2.dp))
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Black,
-                fontFamily = FontFamily.Monospace
-            ),
-            color = valueColor
-        )
+        Text(value, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace), color = valueColor)
     }
 }

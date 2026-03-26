@@ -28,7 +28,13 @@ data class HypraceCircuit(
     @SerializedName("trackSize") val trackSize: Int? = null
 )
 
-data class HypraceDriverStanding(val position: Int?, val points: Double?, val driverId: String?, val driverName: String?)
+data class HypraceDriverStanding(
+    val position: Int?,
+    val points: Double?,
+    val driverId: String?,
+    val driverName: String?,
+    val teamName: String?  // ← ezt add hozzá
+)
 data class HypraceConstructorStanding(val position: Int?, val points: Double?, val teamId: String?, val teamName: String?)
 data class HypraceTeam(val id: String?, val name: String?, val drivers: List<HypraceDriver> = emptyList())
 data class HypraceDriver(val id: String?, val firstName: String?, val lastName: String?, val driverStatus: String?, val standing: HypraceStanding?)

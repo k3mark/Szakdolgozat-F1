@@ -16,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,7 +52,6 @@ fun MainScreen() {
                         shape = RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp)
                     )
                 ) {
-                    // Profile tab removed — now in top-right avatar
                     val items = listOf(
                         Triple(Screen.Home,      "Home",      Icons.Filled.Home),
                         Triple(Screen.Calendar,  "Calendar",  Icons.Filled.DateRange),

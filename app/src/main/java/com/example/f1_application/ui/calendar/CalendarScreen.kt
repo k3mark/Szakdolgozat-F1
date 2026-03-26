@@ -4,9 +4,11 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -22,13 +24,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.f1_application.data.repository.F1Repository
+import com.example.f1_application.ui.navigation.Screen
 import com.example.f1_application.ui.theme.*
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(username: String, repository: F1Repository) {
+fun CalendarScreen(username: String, repository: F1Repository, navController: NavController) {
     val viewModel: CalendarViewModel = viewModel(factory = CalendarViewModelFactory(repository))
     val races by viewModel.races.collectAsState()
     val selectedYear by viewModel.selectedYear.collectAsState()
@@ -40,53 +44,49 @@ fun CalendarScreen(username: String, repository: F1Repository) {
 
     LaunchedEffect(username) { user = repository.getUser(username) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(F1Dark)
-    ) {
-        // ── HEADER ───────────────────────────────────────────────
+    Column(modifier = Modifier.fillMaxSize().background(F1Dark)) {
+
         Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Text(
-                text = "CALENDAR",
-                style = MaterialTheme.typography.headlineLarge,
-                color = F1Red
-            )
-            Text(
-                text = "RACE CALENDAR",
-                style = MaterialTheme.typography.labelLarge,
-                color = F1TextHint,
-                letterSpacing = 3.sp
-            )
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("CALENDAR", style = MaterialTheme.typography.headlineLarge, color = F1Red)
+                    Text("RACE CALENDAR", style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 3.sp)
+                }
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(F1Surface)
+                        .border(2.dp, F1Red, CircleShape)
+                        .clickable { navController.navigate(Screen.Profile.route) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = username.take(2).uppercase(),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = F1Red,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
         }
 
-        // ── YEAR SELECTOR ────────────────────────────────────────
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded },
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()
+            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
         ) {
             OutlinedTextField(
-                value = "$selectedYear SEASON",
-                onValueChange = {},
-                readOnly = true,
+                value = "$selectedYear SEASON", onValueChange = {}, readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = F1Red,
-                    unfocusedBorderColor = F1Border,
-                    focusedTextColor = F1TextPrim,
-                    unfocusedTextColor = F1TextPrim,
-                    focusedContainerColor = F1Surface,
-                    unfocusedContainerColor = F1Surface
+                    focusedBorderColor = F1Red, unfocusedBorderColor = F1Border,
+                    focusedTextColor = F1TextPrim, unfocusedTextColor = F1TextPrim,
+                    focusedContainerColor = F1Surface, unfocusedContainerColor = F1Surface
                 ),
                 shape = RoundedCornerShape(8.dp),
-                textStyle = MaterialTheme.typography.labelLarge.copy(
-                    letterSpacing = 2.sp,
-                    color = F1TextSec
-                )
+                textStyle = MaterialTheme.typography.labelLarge.copy(letterSpacing = 2.sp, color = F1TextSec)
             )
             ExposedDropdownMenu(
                 expanded = expanded,
@@ -95,13 +95,7 @@ fun CalendarScreen(username: String, repository: F1Repository) {
             ) {
                 years.forEach { year ->
                     DropdownMenuItem(
-                        text = {
-                            Text(
-                                "$year",
-                                color = F1TextPrim,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
+                        text = { Text("$year", color = F1TextPrim, style = MaterialTheme.typography.bodyMedium) },
                         onClick = { viewModel.updateYear(year); expanded = false },
                         modifier = Modifier.background(F1Surface2)
                     )
@@ -111,7 +105,6 @@ fun CalendarScreen(username: String, repository: F1Repository) {
 
         Spacer(Modifier.height(10.dp))
 
-        // ── RACE LIST ────────────────────────────────────────────
         LazyColumn(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -119,7 +112,6 @@ fun CalendarScreen(username: String, repository: F1Repository) {
             itemsIndexed(races) { index, race ->
                 val isFav = race.circuitId != null && user?.favoriteTrackId == race.circuitId
                 val isFinished = race.status == "Finished"
-
                 AnimatedCalendarRow(
                     index = index,
                     race = race,
@@ -174,48 +166,32 @@ fun AnimatedCalendarRow(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
                 .background(F1Surface)
-                .border(
-                    1.dp,
-                    accentColor.copy(alpha = if (isFav) 0.5f else 0.15f),
-                    RoundedCornerShape(8.dp)
-                ),
+                .border(1.dp, accentColor.copy(alpha = if (isFav) 0.5f else 0.15f), RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Round number
             Box(
                 modifier = Modifier
                     .width(44.dp)
                     .fillMaxHeight()
-                    .background(
-                        if (isFinished) F1Surface2 else F1Red.copy(alpha = 0.1f)
-                    )
+                    .background(if (isFinished) F1Surface2 else F1Red.copy(alpha = 0.1f))
                     .padding(vertical = 14.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("R", style = MaterialTheme.typography.labelSmall, color = F1TextHint, fontSize = 8.sp)
                     Text(
-                        text = "R",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = F1TextHint,
-                        fontSize = 8.sp
-                    )
-                    Text(
-                        text = "$roundNum",
+                        "$roundNum",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Black,
-                            fontSize = 15.sp
+                            fontSize = 17.sp
                         ),
                         color = if (isFinished) F1TextHint else F1Red
                     )
                 }
             }
 
-            // Favorite star
-            IconButton(
-                onClick = onFavClick,
-                modifier = Modifier.size(40.dp)
-            ) {
+            IconButton(onClick = onFavClick, modifier = Modifier.size(40.dp)) {
                 Icon(
                     imageVector = if (isFav) Icons.Default.Star else Icons.Default.StarBorder,
                     contentDescription = null,
@@ -224,40 +200,27 @@ fun AnimatedCalendarRow(
                 )
             }
 
-            // Race info — golden middle ground font sizes
             Column(
-                Modifier
-                    .weight(1f)
-                    .padding(vertical = 11.dp)
+                Modifier.weight(1f).padding(vertical = 11.dp)
             ) {
-                // Race name: 13sp (was 15sp → too big, original was ~12sp → too small)
                 Text(
                     text = race.raceName ?: "Unknown",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    ),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 15.sp),
                     color = F1TextPrim
                 )
-                // Circuit name: 11sp (was 13sp → too big, original was ~10sp → too small)
                 Text(
                     text = race.officialName ?: "Unknown circuit",
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 13.sp),
                     color = F1Red
                 )
                 Spacer(Modifier.height(2.dp))
-                // Date: 11sp monospace
                 Text(
                     text = formatF1Date(race.startDate ?: ""),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 11.sp
-                    ),
+                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontSize = 12.sp),
                     color = F1TextHint
                 )
             }
 
-            // Status badge
             Box(modifier = Modifier.padding(end = 10.dp)) {
                 if (isFinished) {
                     Box(
@@ -267,11 +230,7 @@ fun AnimatedCalendarRow(
                             .border(1.dp, F1TextHint.copy(alpha = 0.25f), RoundedCornerShape(4.dp))
                             .padding(horizontal = 7.dp, vertical = 3.dp)
                     ) {
-                        Text(
-                            text = "DONE",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = F1TextHint
-                        )
+                        Text("DONE", style = MaterialTheme.typography.labelSmall, color = F1TextHint)
                     }
                 } else {
                     Box(
@@ -281,11 +240,7 @@ fun AnimatedCalendarRow(
                             .border(1.dp, F1Red.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
                             .padding(horizontal = 7.dp, vertical = 3.dp)
                     ) {
-                        Text(
-                            text = "UPCOMING",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = F1Red
-                        )
+                        Text("UPCOMING", style = MaterialTheme.typography.labelSmall, color = F1Red)
                     }
                 }
             }
