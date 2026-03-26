@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.f1_application.data.repository.F1Repository
 import com.example.f1_application.ui.theme.*
 import kotlinx.coroutines.launch
+import com.example.f1_application.data.model.HypraceConstructorStanding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -160,18 +161,19 @@ fun StandingsScreen(username: String, repository: F1Repository) {
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             if (viewType == StandingViewType.DRIVER) {
-                itemsIndexed(driverStandings) { index, standing ->
-                    val isFavorite = user?.favoriteDriverId == standing.driverId
+                itemsIndexed(constructorStandings) { index, standing ->
+                    val s = standing as HypraceConstructorStanding
+                    val isFavorite = user?.favoriteTeamId == s.teamId
                     AnimatedStandingRow(
                         index = index,
-                        pos = standing.position ?: 0,
-                        name = standing.driverName ?: "Unknown",
-                        sub = standing.teamName ?: "",
-                        points = standing.points ?: 0.0,
+                        pos = s.position ?: 0,
+                        name = repository.toTitleCase(s.teamName ?: ""),
+                        sub = "",
+                        points = s.points ?: 0.0,
                         isFavorite = isFavorite,
                         onFavoriteToggle = {
                             scope.launch {
-                                repository.toggleFavoriteDriver(username, standing.driverId ?: "", standing.driverName ?: "")
+                                repository.toggleFavoriteTeam(username, s.teamId ?: "", s.teamName ?: "")
                                 user = repository.getUser(username)
                             }
                         }
@@ -183,7 +185,7 @@ fun StandingsScreen(username: String, repository: F1Repository) {
                     AnimatedStandingRow(
                         index = index,
                         pos = standing.position ?: 0,
-                        name = repository.toTitleCase(standing.teamName),
+                        name = repository.toTitleCase(standing.teamName ?: ""),  // ← ?: "" hozzáadva
                         sub = "",
                         points = standing.points ?: 0.0,
                         isFavorite = isFavorite,
