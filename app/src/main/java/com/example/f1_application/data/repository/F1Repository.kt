@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.f1_application.data.local.*
 import com.example.f1_application.data.model.*
 import com.example.f1_application.data.remote.RetrofitClient
+import kotlinx.coroutines.flow.Flow
 import java.util.Locale
 
 data class TeamHistory(val year: Int, val points: Double, val position: Int)
@@ -15,6 +16,7 @@ class F1Repository(context: Context) {
     private val dao = db.raceDao()
     private val circuitDao = db.circuitDao()
     private val userDao = db.userDao()
+    private val searchHistoryDao = db.searchHistoryDao()
 
     // Segédfüggvény a nevek formázásához (pl. RED BULL -> Red Bull)
     fun toTitleCase(text: String?): String {
@@ -148,6 +150,25 @@ class F1Repository(context: Context) {
         if (ranked.isNotEmpty()) dao.insertConstructorStandings(ranked)
         return ranked.map { HypraceConstructorStanding(it.position, it.points, it.teamId, it.teamName) }
     }
+
+    // --- KERESÉSI ELŐZMÉNYEK ---
+    fun getSearchHistory(): Flow<List<SearchHistoryEntity>> =
+        searchHistoryDao.getRecentSearches()
+
+    suspend fun saveSearch(query: String, resultType: String) {
+        // Csak ha még nincs ugyanez a query elmentve
+        if (searchHistoryDao.exists(query) == 0) {
+            searchHistoryDao.insertSearch(
+                SearchHistoryEntity(query = query, resultType = resultType)
+            )
+        }
+    }
+
+    suspend fun deleteSearch(id: Int) =
+        searchHistoryDao.deleteSearch(id)
+
+    suspend fun clearSearchHistory() =
+        searchHistoryDao.clearAll()
 
     // --- MAPPING ---
     private fun HypraceRace.toEntity(year: Int, driverMap: Map<String, String>, circuitInfo: CircuitEntity?, lapsCount: Int?): RaceEntity {

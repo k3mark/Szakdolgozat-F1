@@ -6,6 +6,7 @@ import androidx.navigation.compose.*
 import com.example.f1_application.data.repository.F1Repository
 import com.example.f1_application.ui.auth.*
 import com.example.f1_application.ui.calendar.CalendarScreen
+import com.example.f1_application.ui.compare.CompareScreen
 import com.example.f1_application.ui.home.HomeScreen
 import com.example.f1_application.ui.profile.ProfileScreen
 import com.example.f1_application.ui.standings.StandingsScreen
@@ -17,6 +18,7 @@ sealed class Screen(val route: String) {
     object Standings : Screen("standings")
     object Search : Screen("search")
     object Profile : Screen("profile")
+    object Compare : Screen("compare") // ÚJ
 }
 
 @Composable
@@ -36,6 +38,11 @@ fun F1NavGraph(navController: NavHostController, loggedInUser: String?, onLogin:
                 onLogout = { onLogin(null.toString()); navController.navigate("login") { popUpTo(0) } },
                 onUsernameChanged = { onLogin(it) }
             )
+
         }
+        composable(Screen.Compare.route) {
+            CompareScreen(repository)
+        }
+
     }
 }

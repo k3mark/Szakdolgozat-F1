@@ -31,7 +31,14 @@ fun MainScreen() {
         bottomBar = {
             if (loggedInUser != null && currentRoute != "login" && currentRoute != "register") {
                 NavigationBar {
-                    val items = listOf(Triple(Screen.Home, "Kezdőlap", Icons.Filled.Home), Triple(Screen.Calendar, "Naptár", Icons.Filled.DateRange), Triple(Screen.Standings, "Állás", Icons.Filled.List), Triple(Screen.Search, "Kereső", Icons.Filled.Search), Triple(Screen.Profile, "Profil", Icons.Filled.Person) )
+                    val items = listOf(
+                        Triple(Screen.Home, "Kezdőlap", Icons.Filled.Home),
+                        Triple(Screen.Calendar, "Naptár", Icons.Filled.DateRange),
+                        Triple(Screen.Standings, "Állás", Icons.Filled.List),
+                        Triple(Screen.Search, "Kereső", Icons.Filled.Search),
+                        Triple(Screen.Compare, "Összehas.", Icons.Filled.Compare), // ÚJ
+                        Triple(Screen.Profile, "Profil", Icons.Filled.Person)
+                    )
                     items.forEach { (screen, label, icon) ->
                         NavigationBarItem(
                             icon = { Icon(icon, null) }, label = { Text(label) },
