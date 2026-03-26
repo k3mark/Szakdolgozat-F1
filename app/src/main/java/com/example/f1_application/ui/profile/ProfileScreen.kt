@@ -49,13 +49,13 @@ fun ProfileScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // ── FEJLÉC ───────────────────────────────────────────────
+        // ── HEADER ───────────────────────────────────────────────
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "PROFIL",
+                text = "PROFILE",
                 style = MaterialTheme.typography.headlineLarge,
                 color = F1Red
             )
@@ -69,7 +69,7 @@ fun ProfileScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        // ── FELHASZNÁLÓ AVATAR ────────────────────────────────────
+        // ── AVATAR ───────────────────────────────────────────────
         Box(
             modifier = Modifier
                 .size(80.dp)
@@ -86,42 +86,19 @@ fun ProfileScreen(
             )
         }
         Spacer(Modifier.height(8.dp))
-        Text(
-            text = username,
-            style = MaterialTheme.typography.titleLarge,
-            color = F1TextPrim,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "F1 RACE TRACKER",
-            style = MaterialTheme.typography.labelSmall,
-            color = F1TextHint
-        )
+        Text(text = username, style = MaterialTheme.typography.titleLarge, color = F1TextPrim, fontWeight = FontWeight.Bold)
+        Text(text = "F1 RACE TRACKER", style = MaterialTheme.typography.labelSmall, color = F1TextHint)
 
         Spacer(Modifier.height(28.dp))
 
-        // ── FIÓK ADATOK SZEKCIÓ ───────────────────────────────────
-        F1ProfileSectionHeader("FIÓK ADATOK")
+        // ── ACCOUNT DETAILS ──────────────────────────────────────
+        F1ProfileSectionHeader("ACCOUNT DETAILS")
         Spacer(Modifier.height(10.dp))
 
-        F1ProfileTextField(
-            value = newUsername,
-            onValueChange = { newUsername = it },
-            label = "FELHASZNÁLÓNÉV",
-            icon = Icons.Default.Person
-        )
-
+        F1ProfileTextField(value = newUsername, onValueChange = { newUsername = it }, label = "USERNAME", icon = Icons.Default.Person)
         Spacer(Modifier.height(8.dp))
+        F1ProfileTextField(value = newPassword, onValueChange = { newPassword = it }, label = "NEW PASSWORD", icon = Icons.Default.Lock, isPassword = true)
 
-        F1ProfileTextField(
-            value = newPassword,
-            onValueChange = { newPassword = it },
-            label = "ÚJ JELSZÓ",
-            icon = Icons.Default.Lock,
-            isPassword = true
-        )
-
-        // Üzenet
         message?.let { (msg, color) ->
             Spacer(Modifier.height(8.dp))
             Box(
@@ -132,111 +109,77 @@ fun ProfileScreen(
                     .border(1.dp, color.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
                     .padding(10.dp)
             ) {
-                Text(
-                    text = msg,
-                    color = color,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium
-                )
+                Text(text = msg, color = color, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
             }
         }
 
         Spacer(Modifier.height(14.dp))
 
-        // Mentés gomb
         Button(
             onClick = {
                 if (newUsername.isBlank() || newPassword.length < 4) {
-                    message = "Túl rövid név vagy jelszó (min. 4 karakter)!" to F1Red
+                    message = "Username or password too short (min. 4 chars)!" to F1Red
                     return@Button
                 }
                 scope.launch {
                     val success = repository.updateUserInfo(username, newUsername, newPassword)
                     if (success) {
-                        message = "Adatok sikeresen frissítve!" to F1Green
+                        message = "Details updated successfully!" to F1Green
                         onUsernameChanged(newUsername)
                     } else {
-                        message = "Ez a felhasználónév már foglalt!" to F1Red
+                        message = "This username is already taken!" to F1Red
                     }
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = F1Red,
-                contentColor = F1TextPrim
-            ),
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = F1Red, contentColor = F1TextPrim),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text(
-                text = "ADATOK MENTÉSE",
-                style = MaterialTheme.typography.labelLarge,
-                letterSpacing = 2.sp
-            )
+            Text(text = "SAVE CHANGES", style = MaterialTheme.typography.labelLarge, letterSpacing = 2.sp)
         }
 
         Spacer(Modifier.height(28.dp))
 
-        // ── KEDVENCEK SZEKCIÓ ─────────────────────────────────────
-        F1ProfileSectionHeader("KEDVENCEK")
+        // ── FAVORITES ────────────────────────────────────────────
+        F1ProfileSectionHeader("FAVORITES")
         Spacer(Modifier.height(10.dp))
 
         OutlinedButton(
             onClick = {
                 scope.launch {
                     repository.resetFavorites(username)
-                    message = "Kedvencek alaphelyzetbe állítva!" to F1Orange
+                    message = "Favorites reset!" to F1Orange
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = F1Orange
-            ),
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = F1Orange),
             border = androidx.compose.foundation.BorderStroke(1.dp, F1Orange.copy(alpha = 0.5f)),
             shape = RoundedCornerShape(8.dp)
         ) {
             Icon(Icons.Default.Refresh, null, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(8.dp))
-            Text(
-                text = "KEDVENCEK TÖRLÉSE",
-                style = MaterialTheme.typography.labelLarge,
-                letterSpacing = 2.sp
-            )
+            Text(text = "RESET FAVORITES", style = MaterialTheme.typography.labelLarge, letterSpacing = 2.sp)
         }
 
         Spacer(Modifier.height(28.dp))
 
-        // ── SESSION SZEKCIÓ ───────────────────────────────────────
+        // ── SESSION ───────────────────────────────────────────────
         F1ProfileSectionHeader("SESSION")
         Spacer(Modifier.height(10.dp))
 
-        // Kijelentkezés
         Button(
             onClick = onLogout,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = F1Surface2,
-                contentColor = F1TextPrim
-            ),
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = F1Surface2, contentColor = F1TextPrim),
             shape = RoundedCornerShape(8.dp)
         ) {
             Icon(Icons.Default.ExitToApp, null, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(8.dp))
-            Text(
-                text = "KIJELENTKEZÉS",
-                style = MaterialTheme.typography.labelLarge,
-                letterSpacing = 2.sp
-            )
+            Text(text = "LOG OUT", style = MaterialTheme.typography.labelLarge, letterSpacing = 2.sp)
         }
 
         Spacer(Modifier.height(10.dp))
 
-        // Fiók törlése
         OutlinedButton(
             onClick = {
                 scope.launch {
@@ -244,22 +187,14 @@ fun ProfileScreen(
                     onLogout()
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = F1Red.copy(alpha = 0.8f)
-            ),
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = F1Red.copy(alpha = 0.8f)),
             border = androidx.compose.foundation.BorderStroke(1.dp, F1Red.copy(alpha = 0.3f)),
             shape = RoundedCornerShape(8.dp)
         ) {
             Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(8.dp))
-            Text(
-                text = "FIÓK VÉGLEGES TÖRLÉSE",
-                style = MaterialTheme.typography.labelLarge,
-                letterSpacing = 1.sp
-            )
+            Text(text = "DELETE ACCOUNT", style = MaterialTheme.typography.labelLarge, letterSpacing = 1.sp)
         }
 
         Spacer(Modifier.height(24.dp))
@@ -268,23 +203,10 @@ fun ProfileScreen(
 
 @Composable
 fun F1ProfileSectionHeader(title: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .width(3.dp)
-                .height(14.dp)
-                .background(F1Red, RoundedCornerShape(2.dp))
-        )
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Box(modifier = Modifier.width(3.dp).height(14.dp).background(F1Red, RoundedCornerShape(2.dp)))
         Spacer(Modifier.width(8.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-            color = F1TextHint,
-            letterSpacing = 2.sp
-        )
+        Text(text = title, style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 2.sp)
         Spacer(Modifier.width(8.dp))
         HorizontalDivider(color = F1Border, modifier = Modifier.weight(1f))
     }
@@ -301,13 +223,7 @@ fun F1ProfileTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = {
-            Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
-                color = F1TextHint
-            )
-        },
+        label = { Text(label, style = MaterialTheme.typography.labelSmall, color = F1TextHint) },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
         leadingIcon = { Icon(icon, null, tint = F1TextHint, modifier = Modifier.size(18.dp)) },

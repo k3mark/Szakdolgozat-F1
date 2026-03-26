@@ -3,15 +3,17 @@ package com.example.f1_application.ui.home
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -19,14 +21,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.f1_application.data.repository.F1Repository
 import com.example.f1_application.ui.common.*
+import com.example.f1_application.ui.navigation.Screen
 import com.example.f1_application.ui.search.CircuitResultCard
 import com.example.f1_application.ui.search.DriverResultCard
 import com.example.f1_application.ui.theme.*
 
 @Composable
-fun HomeScreen(username: String, repository: F1Repository) {
+fun HomeScreen(username: String, repository: F1Repository, navController: NavController) {
     val viewModel: HomeViewModel = viewModel()
     val nextRace by viewModel.nextRace.collectAsState()
     val countdown by viewModel.countdown.collectAsState()
@@ -52,30 +56,47 @@ fun HomeScreen(username: String, repository: F1Repository) {
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // ── FEJLÉC ───────────────────────────────────────────────
+        // ── HEADER with profile avatar ────────────────────────────
         item {
             Spacer(Modifier.height(8.dp))
-            Column(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "F1 DASHBOARD",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = F1Red,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "RACE CONTROL CENTER",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = F1TextHint,
-                    textAlign = TextAlign.Center,
-                    letterSpacing = 4.sp
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "F1 DASHBOARD",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = F1Red
+                    )
+                    Text(
+                        text = "RACE CONTROL CENTER",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = F1TextHint,
+                        letterSpacing = 4.sp
+                    )
+                }
+                // Profile avatar — navigates to Profile screen
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(F1Surface)
+                        .border(2.dp, F1Red, CircleShape)
+                        .clickable { navController.navigate(Screen.Profile.route) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = username.take(2).uppercase(),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = F1Red,
+                        fontWeight = FontWeight.Black
+                    )
+                }
             }
         }
 
-        // ── KÖVETKEZŐ NAGYDÍJ ────────────────────────────────────
+        // ── NEXT GRAND PRIX ──────────────────────────────────────
         item {
             nextRace?.let { race ->
                 Box(
@@ -86,46 +107,50 @@ fun HomeScreen(username: String, repository: F1Repository) {
                         .border(1.dp, F1Red.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        F1Badge("KÖVETKEZŐ NAGYDÍJ", color = F1Red)
+                        F1Badge("NEXT GRAND PRIX", color = F1Red)
                         Spacer(Modifier.height(12.dp))
                         Text(
                             text = race.raceName ?: "",
                             style = MaterialTheme.typography.headlineMedium,
                             color = F1TextPrim,
                             fontWeight = FontWeight.Black,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(Modifier.height(12.dp))
-                        // Pulzáló visszaszámláló
                         val alpha = pulsingAlpha()
                         Text(
                             text = countdown,
                             style = MaterialTheme.typography.displaySmall,
                             color = F1Red.copy(alpha = alpha),
                             fontWeight = FontWeight.Black,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                            fontFamily = FontFamily.Monospace,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
             }
         }
 
-        // ── KEDVENC PILÓTA ───────────────────────────────────────
+        // ── FAVORITE DRIVER ──────────────────────────────────────
         item {
-            F1SectionHeader("KEDVENC PILÓTÁD")
+            F1SectionHeader("FAVORITE DRIVER")
             if (favDriver != null) {
                 DriverResultCard(favDriver!!)
             } else {
-                F1EmptyState("Nincs beállítva kedvenc pilóta.\nÁllásban csillagozz be egyet!")
+                F1EmptyState("No favorite driver set.\nStar one in Standings!")
             }
         }
 
-        // ── KEDVENC CSAPAT ───────────────────────────────────────
+        // ── FAVORITE TEAM ────────────────────────────────────────
         item {
-            F1SectionHeader("KEDVENC CSAPATOD")
+            F1SectionHeader("FAVORITE TEAM")
             if (favHistory.isNotEmpty()) {
                 val current = favHistory.first()
                 Box(
@@ -143,7 +168,7 @@ fun HomeScreen(username: String, repository: F1Repository) {
                     )
                     Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 14.dp, bottom = 14.dp)) {
                         Text(
-                            text = favTeamName ?: "Ismeretlen csapat",
+                            text = favTeamName ?: "Unknown team",
                             style = MaterialTheme.typography.headlineSmall,
                             color = F1TextPrim,
                             fontWeight = FontWeight.Black
@@ -151,14 +176,14 @@ fun HomeScreen(username: String, repository: F1Repository) {
                         Spacer(Modifier.height(12.dp))
                         Row(Modifier.fillMaxWidth()) {
                             F1DataTile(
-                                label = "PONTSZÁM (2026)",
+                                label = "POINTS (2026)",
                                 value = "${current.points.toInt()} PTS",
                                 valueColor = F1Gold,
                                 modifier = Modifier.weight(1f)
                             )
                             F1DataTile(
-                                label = "HELYEZÉS",
-                                value = "${current.position}. HELY",
+                                label = "POSITION",
+                                value = "${current.position}. PLACE",
                                 valueColor = F1TextPrim,
                                 modifier = Modifier.weight(1f)
                             )
@@ -166,17 +191,16 @@ fun HomeScreen(username: String, repository: F1Repository) {
                     }
                 }
             } else {
-                F1EmptyState("Nincs beállítva kedvenc csapat.\nÁllásban csillagozz be egyet!")
+                F1EmptyState("No favorite team set.\nStar one in Standings!")
             }
         }
 
-        // ── KEDVENC PÁLYA ────────────────────────────────────────
+        // ── FAVORITE TRACK ───────────────────────────────────────
         item {
-            F1SectionHeader("KEDVENC PÁLYÁD ÉS FUTAMOD")
+            F1SectionHeader("FAVORITE TRACK & RACE")
             if (favCircuit != null) {
                 CircuitResultCard(favCircuit!!)
                 Spacer(Modifier.height(10.dp))
-                // Egyedi visszaszámláló a kedvenc futamig
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -186,9 +210,12 @@ fun HomeScreen(username: String, repository: F1Repository) {
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Text(
-                            text = "HÁTRALÉVŐ IDŐ A KEDVENC FUTAMIG",
+                            text = "TIME LEFT UNTIL FAVORITE RACE",
                             style = MaterialTheme.typography.labelLarge,
                             color = F1TextHint,
                             textAlign = TextAlign.Center
@@ -198,15 +225,16 @@ fun HomeScreen(username: String, repository: F1Repository) {
                         Text(
                             text = favTrackTime,
                             style = MaterialTheme.typography.displaySmall.copy(
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                fontFamily = FontFamily.Monospace
                             ),
                             color = F1Orange.copy(alpha = alpha),
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
             } else {
-                F1EmptyState("Nincs beállítva kedvenc pálya.\nNaptárban csillagozz be egyet!")
+                F1EmptyState("No favorite track set.\nStar one in Calendar!")
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -238,7 +266,7 @@ fun F1EmptyState(message: String) {
 fun F1DataTile(
     label: String,
     value: String,
-    valueColor: Color = F1Red,
+    valueColor: androidx.compose.ui.graphics.Color = F1Red,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -252,7 +280,7 @@ fun F1DataTile(
             text = value,
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.Black,
-                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                fontFamily = FontFamily.Monospace
             ),
             color = valueColor
         )

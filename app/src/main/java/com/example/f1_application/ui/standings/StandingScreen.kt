@@ -23,8 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.f1_application.data.model.HypraceConstructorStanding
-import com.example.f1_application.data.model.HypraceDriverStanding
 import com.example.f1_application.data.repository.F1Repository
 import com.example.f1_application.ui.theme.*
 import kotlinx.coroutines.launch
@@ -50,20 +48,31 @@ fun StandingsScreen(username: String, repository: F1Repository) {
             .fillMaxSize()
             .background(F1Dark)
     ) {
-        // --- FEJLÉC ---
+        // ── HEADER ───────────────────────────────────────────────
         Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Text(text = "BAJNOKSÁG", style = MaterialTheme.typography.headlineLarge, color = F1Red)
-            Text(text = "CHAMPIONSHIP STANDINGS", style = MaterialTheme.typography.labelLarge, color = F1TextHint, letterSpacing = 3.sp)
+            Text(
+                text = "STANDINGS",
+                style = MaterialTheme.typography.headlineLarge,
+                color = F1Red
+            )
+            Text(
+                text = "CHAMPIONSHIP STANDINGS",
+                style = MaterialTheme.typography.labelLarge,
+                color = F1TextHint,
+                letterSpacing = 3.sp
+            )
         }
 
-        // --- ÉV VÁLASZTÓ ---
+        // ── YEAR SELECTOR ────────────────────────────────────────
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded },
-            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
         ) {
             OutlinedTextField(
-                value = "$selectedYear SZEZON",
+                value = "$selectedYear SEASON",
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
@@ -76,12 +85,20 @@ fun StandingsScreen(username: String, repository: F1Repository) {
                     focusedContainerColor = F1Surface,
                     unfocusedContainerColor = F1Surface
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                textStyle = MaterialTheme.typography.labelLarge.copy(
+                    letterSpacing = 2.sp,
+                    color = F1TextSec
+                )
             )
-            ExposedDropdownMenu(expanded, { expanded = false }, modifier = Modifier.background(F1Surface2)) {
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(F1Surface2)
+            ) {
                 years.forEach { year ->
                     DropdownMenuItem(
-                        text = { Text("$year", color = F1TextPrim) },
+                        text = { Text("$year", color = F1TextPrim, style = MaterialTheme.typography.bodyMedium) },
                         onClick = { viewModel.setYear(year); expanded = false },
                         modifier = Modifier.background(F1Surface2)
                     )
@@ -91,69 +108,88 @@ fun StandingsScreen(username: String, repository: F1Repository) {
 
         Spacer(Modifier.height(8.dp))
 
-        // --- TÍPUS VÁLASZTÓ (DRIVER/CONSTRUCTOR) ---
+        // ── TABS ─────────────────────────────────────────────────
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp)).background(F1Surface).border(1.dp, F1Border, RoundedCornerShape(8.dp))
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(F1Surface)
+                .border(1.dp, F1Border, RoundedCornerShape(8.dp))
         ) {
             val isDriver = viewType == StandingViewType.DRIVER
             Box(
-                modifier = Modifier.weight(1f).background(if (isDriver) F1Red else Color.Transparent)
-                    .clickable { viewModel.setViewType(StandingViewType.DRIVER) }.padding(vertical = 12.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
+                    .background(if (isDriver) F1Red else Color.Transparent)
+                    .clickable { viewModel.setViewType(StandingViewType.DRIVER) }
+                    .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "EGYÉNI", style = MaterialTheme.typography.labelLarge, color = if (isDriver) F1TextPrim else F1TextHint)
+                Text(
+                    text = "DRIVERS",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (isDriver) F1TextPrim else F1TextHint
+                )
             }
             Box(
-                modifier = Modifier.weight(1f).background(if (!isDriver) F1Red else Color.Transparent)
-                    .clickable { viewModel.setViewType(StandingViewType.CONSTRUCTOR) }.padding(vertical = 12.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
+                    .background(if (!isDriver) F1Red else Color.Transparent)
+                    .clickable { viewModel.setViewType(StandingViewType.CONSTRUCTOR) }
+                    .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "CSAPAT", style = MaterialTheme.typography.labelLarge, color = if (!isDriver) F1TextPrim else F1TextHint)
+                Text(
+                    text = "CONSTRUCTORS",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (!isDriver) F1TextPrim else F1TextHint
+                )
             }
         }
 
         Spacer(Modifier.height(8.dp))
 
-        // --- LISTA (JAVÍTOTT TÍPUSOKKAL) ---
+        // ── LIST ─────────────────────────────────────────────────
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             if (viewType == StandingViewType.DRIVER) {
-                // PILÓTÁK: Explicit típus HypraceDriverStanding
-                itemsIndexed(driverStandings) { index, dStanding: HypraceDriverStanding ->
-                    val isFavorite = user?.favoriteDriverId == dStanding.driverId
+                itemsIndexed(driverStandings) { index, standing ->
+                    val isFavorite = user?.favoriteDriverId == standing.driverId
                     AnimatedStandingRow(
                         index = index,
-                        pos = dStanding.position ?: 0,
-                        name = dStanding.driverName ?: "Ismeretlen",
-                        sub = "", // Pilótánál ide jöhetne a csapatnév, ha a modellben benne van
-                        points = dStanding.points ?: 0.0,
+                        pos = standing.position ?: 0,
+                        name = standing.driverName ?: "Unknown",
+                        sub = standing.teamName ?: "",
+                        points = standing.points ?: 0.0,
                         isFavorite = isFavorite,
                         onFavoriteToggle = {
                             scope.launch {
-                                repository.toggleFavoriteDriver(username, dStanding.driverId ?: "", dStanding.driverName ?: "")
+                                repository.toggleFavoriteDriver(username, standing.driverId ?: "", standing.driverName ?: "")
                                 user = repository.getUser(username)
                             }
                         }
                     )
                 }
             } else {
-                // CSAPATOK: Explicit típus HypraceConstructorStanding (ITT VOLT A HIBA)
-                itemsIndexed(constructorStandings) { index, cStanding: HypraceConstructorStanding ->
-                    val isFavorite = user?.favoriteTeamId == cStanding.teamId
+                itemsIndexed(constructorStandings) { index, standing ->
+                    val isFavorite = user?.favoriteTeamId == standing.teamId
                     AnimatedStandingRow(
                         index = index,
-                        pos = cStanding.position ?: 0,
-                        name = repository.toTitleCase(cStanding.teamName), // Most már látni fogja a teamName-t
+                        pos = standing.position ?: 0,
+                        name = repository.toTitleCase(standing.teamName),
                         sub = "",
-                        points = cStanding.points ?: 0.0,
+                        points = standing.points ?: 0.0,
                         isFavorite = isFavorite,
                         onFavoriteToggle = {
                             scope.launch {
-                                // JAVÍTVA: cStanding.teamName használata
-                                repository.toggleFavoriteTeam(username, cStanding.teamId ?: "", cStanding.teamName ?: "")
+                                repository.toggleFavoriteTeam(username, standing.teamId ?: "", standing.teamName ?: "")
                                 user = repository.getUser(username)
                             }
                         }
@@ -183,7 +219,10 @@ fun AnimatedStandingRow(
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(tween(300)) + slideInHorizontally(initialOffsetX = { it / 4 }, animationSpec = tween(300))
+        enter = fadeIn(tween(300)) + slideInHorizontally(
+            initialOffsetX = { it / 4 },
+            animationSpec = tween(300)
+        )
     ) {
         val accentColor = when (pos) {
             1 -> F1Gold
@@ -191,34 +230,68 @@ fun AnimatedStandingRow(
             3 -> Color(0xFFCD7F32)
             else -> F1Border
         }
+        val posColor = when (pos) {
+            1 -> F1Gold
+            2 -> Color(0xFFBEC3C7)
+            3 -> Color(0xFFCD7F32)
+            else -> F1TextHint
+        }
 
         Row(
-            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(F1Surface)
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(F1Surface)
                 .border(1.dp, accentColor.copy(alpha = if (pos <= 3) 0.5f else 0.15f), RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.width(48.dp).fillMaxHeight().background(accentColor.copy(alpha = 0.1f)).padding(vertical = 14.dp),
+                modifier = Modifier
+                    .width(48.dp)
+                    .fillMaxHeight()
+                    .background(accentColor.copy(alpha = if (pos <= 3) 0.12f else 0.05f))
+                    .padding(vertical = 14.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "$pos", style = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Black), color = if (pos <= 3) accentColor else F1TextHint)
+                Text(
+                    text = "$pos",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 16.sp
+                    ),
+                    color = posColor
+                )
             }
 
-            IconButton(onClick = onFavoriteToggle) {
-                Icon(imageVector = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder, contentDescription = null, tint = if (isFavorite) F1Gold else F1TextHint)
+            IconButton(onClick = onFavoriteToggle, modifier = Modifier.size(40.dp)) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                    contentDescription = null,
+                    tint = if (isFavorite) F1Gold else F1TextHint,
+                    modifier = Modifier.size(18.dp)
+                )
             }
 
             Column(Modifier.weight(1f).padding(vertical = 12.dp)) {
                 Text(text = name, style = MaterialTheme.typography.titleMedium, color = F1TextPrim, fontWeight = FontWeight.Bold)
-                if (sub.isNotEmpty()) Text(text = sub, style = MaterialTheme.typography.labelSmall, color = F1TextHint)
+                if (sub.isNotEmpty()) {
+                    Text(text = sub, style = MaterialTheme.typography.labelSmall, color = F1TextHint)
+                }
             }
 
             Text(
-                text = if (points % 1.0 == 0.0) points.toInt().toString() else points.toString(),
-                style = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Black),
+                text = formatPointsValue(points),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Black
+                ),
                 color = if (pos == 1) F1Gold else F1Red,
                 modifier = Modifier.padding(end = 14.dp)
             )
         }
     }
 }
+
+fun formatPointsValue(points: Double): String =
+    if (points % 1.0 == 0.0) points.toInt().toString() else points.toString()

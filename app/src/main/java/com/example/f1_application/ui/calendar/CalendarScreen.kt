@@ -45,10 +45,10 @@ fun CalendarScreen(username: String, repository: F1Repository) {
             .fillMaxSize()
             .background(F1Dark)
     ) {
-        // ── FEJLÉC ───────────────────────────────────────────────
+        // ── HEADER ───────────────────────────────────────────────
         Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Text(
-                text = "NAPTÁR",
+                text = "CALENDAR",
                 style = MaterialTheme.typography.headlineLarge,
                 color = F1Red
             )
@@ -60,7 +60,7 @@ fun CalendarScreen(username: String, repository: F1Repository) {
             )
         }
 
-        // ── ÉV VÁLASZTÓ ──────────────────────────────────────────
+        // ── YEAR SELECTOR ────────────────────────────────────────
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded },
@@ -69,7 +69,7 @@ fun CalendarScreen(username: String, repository: F1Repository) {
                 .fillMaxWidth()
         ) {
             OutlinedTextField(
-                value = "$selectedYear SZEZON",
+                value = "$selectedYear SEASON",
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
@@ -95,7 +95,13 @@ fun CalendarScreen(username: String, repository: F1Repository) {
             ) {
                 years.forEach { year ->
                     DropdownMenuItem(
-                        text = { Text("$year", color = F1TextPrim, style = MaterialTheme.typography.bodyMedium) },
+                        text = {
+                            Text(
+                                "$year",
+                                color = F1TextPrim,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
                         onClick = { viewModel.updateYear(year); expanded = false },
                         modifier = Modifier.background(F1Surface2)
                     )
@@ -105,7 +111,7 @@ fun CalendarScreen(username: String, repository: F1Repository) {
 
         Spacer(Modifier.height(10.dp))
 
-        // ── FUTAM LISTA ──────────────────────────────────────────
+        // ── RACE LIST ────────────────────────────────────────────
         LazyColumn(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -125,8 +131,8 @@ fun CalendarScreen(username: String, repository: F1Repository) {
                                 repository.toggleFavoriteTrack(
                                     username = username,
                                     trackId = race.circuitId!!,
-                                    gpName = race.raceName ?: "Ismeretlen Nagydíj",
-                                    circuitName = race.officialName ?: "Ismeretlen pálya"
+                                    gpName = race.raceName ?: "Unknown Grand Prix",
+                                    circuitName = race.officialName ?: "Unknown circuit"
                                 )
                                 user = repository.getUser(username)
                             }
@@ -175,16 +181,15 @@ fun AnimatedCalendarRow(
                 ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Kör szám
+            // Round number
             Box(
                 modifier = Modifier
                     .width(44.dp)
                     .fillMaxHeight()
                     .background(
-                        if (isFinished) F1Surface2
-                        else F1Red.copy(alpha = 0.1f)
+                        if (isFinished) F1Surface2 else F1Red.copy(alpha = 0.1f)
                     )
-                    .padding(vertical = 16.dp),
+                    .padding(vertical = 14.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -206,7 +211,7 @@ fun AnimatedCalendarRow(
                 }
             }
 
-            // Kedvenc csillag
+            // Favorite star
             IconButton(
                 onClick = onFavClick,
                 modifier = Modifier.size(40.dp)
@@ -219,46 +224,51 @@ fun AnimatedCalendarRow(
                 )
             }
 
-            // Futam adatok
+            // Race info — golden middle ground font sizes
             Column(
                 Modifier
                     .weight(1f)
-                    .padding(vertical = 12.dp)
+                    .padding(vertical = 11.dp)
             ) {
+                // Race name: 13sp (was 15sp → too big, original was ~12sp → too small)
                 Text(
-                    text = race.raceName ?: "Ismeretlen",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = F1TextPrim,
-                    fontWeight = FontWeight.Bold
+                    text = race.raceName ?: "Unknown",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    ),
+                    color = F1TextPrim
                 )
+                // Circuit name: 11sp (was 13sp → too big, original was ~10sp → too small)
                 Text(
-                    text = race.officialName ?: "Ismeretlen pálya",
-                    style = MaterialTheme.typography.labelSmall,
+                    text = race.officialName ?: "Unknown circuit",
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
                     color = F1Red
                 )
-                Spacer(Modifier.height(3.dp))
+                Spacer(Modifier.height(2.dp))
+                // Date: 11sp monospace
                 Text(
                     text = formatF1Date(race.startDate ?: ""),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = F1TextHint,
-                    fontFamily = FontFamily.Monospace
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 11.sp
+                    ),
+                    color = F1TextHint
                 )
             }
 
-            // Státusz badge
-            Box(
-                modifier = Modifier.padding(end = 12.dp)
-            ) {
+            // Status badge
+            Box(modifier = Modifier.padding(end = 10.dp)) {
                 if (isFinished) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(F1TextHint.copy(alpha = 0.1f))
                             .border(1.dp, F1TextHint.copy(alpha = 0.25f), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                            .padding(horizontal = 7.dp, vertical = 3.dp)
                     ) {
                         Text(
-                            text = "KÉSZ",
+                            text = "DONE",
                             style = MaterialTheme.typography.labelSmall,
                             color = F1TextHint
                         )
@@ -269,10 +279,10 @@ fun AnimatedCalendarRow(
                             .clip(RoundedCornerShape(4.dp))
                             .background(F1Red.copy(alpha = 0.1f))
                             .border(1.dp, F1Red.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                            .padding(horizontal = 7.dp, vertical = 3.dp)
                     ) {
                         Text(
-                            text = "VÁRHATÓ",
+                            text = "UPCOMING",
                             style = MaterialTheme.typography.labelSmall,
                             color = F1Red
                         )

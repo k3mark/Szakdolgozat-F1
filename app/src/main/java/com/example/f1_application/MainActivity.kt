@@ -5,7 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -49,13 +53,13 @@ fun MainScreen() {
                         shape = RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp)
                     )
                 ) {
+                    // Profile tab removed — now in top-right avatar
                     val items = listOf(
-                        Triple(Screen.Home,      "Kezdőlap",  Icons.Filled.Home),
-                        Triple(Screen.Calendar,  "Naptár",    Icons.Filled.DateRange),
-                        Triple(Screen.Standings, "Állás",     Icons.Filled.List),
-                        Triple(Screen.Search,    "Kereső",    Icons.Filled.Search),
-                        Triple(Screen.Compare,   "Összehas.", Icons.Filled.Compare),
-                        Triple(Screen.Profile,   "Profil",    Icons.Filled.Person)
+                        Triple(Screen.Home,      "Home",      Icons.Filled.Home),
+                        Triple(Screen.Calendar,  "Calendar",  Icons.Filled.DateRange),
+                        Triple(Screen.Standings, "Standings", Icons.Filled.List),
+                        Triple(Screen.Search,    "Search",    Icons.Filled.Search),
+                        Triple(Screen.Compare,   "Compare",   Icons.Filled.Compare)
                     )
                     items.forEach { (screen, label, icon) ->
                         val selected = navBackStackEntry?.destination
@@ -67,8 +71,7 @@ fun MainScreen() {
                                     icon,
                                     contentDescription = null,
                                     modifier = Modifier.then(
-                                        if (selected) Modifier
-                                            .clip(RoundedCornerShape(4.dp))
+                                        if (selected) Modifier.clip(RoundedCornerShape(4.dp))
                                         else Modifier
                                     )
                                 )
@@ -77,8 +80,8 @@ fun MainScreen() {
                                 Text(
                                     label,
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        fontSize = 9.sp,
-                                        letterSpacing = 0.5.sp
+                                        fontSize = 10.sp,
+                                        letterSpacing = 0.3.sp
                                     )
                                 )
                             },
@@ -107,7 +110,11 @@ fun MainScreen() {
             modifier = Modifier.padding(padding),
             color = F1Dark
         ) {
-            F1NavGraph(navController, loggedInUser) { loggedInUser = it }
+            F1NavGraph(
+                navController = navController,
+                loggedInUser = loggedInUser,
+                onLogin = { loggedInUser = it }
+            )
         }
     }
 }
