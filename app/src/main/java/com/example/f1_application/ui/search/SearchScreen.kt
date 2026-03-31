@@ -226,6 +226,8 @@ fun DriverResultCard(driver: DriverStats) {
     }
 }
 
+// A SearchScreen.kt-ban csak a CircuitResultCard composable-t cseréld le erre:
+
 @Composable
 fun CircuitResultCard(circuit: CircuitStats) {
     Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(F1Surface).border(1.dp, F1Border, RoundedCornerShape(8.dp))) {
@@ -235,10 +237,9 @@ fun CircuitResultCard(circuit: CircuitStats) {
             Spacer(Modifier.height(12.dp))
             F1Divider()
             Spacer(Modifier.height(12.dp))
-            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-                F1StatCell("LENGTH", circuit.trackLength ?: "–", F1Gold, Modifier.weight(1f))
-                F1StatCell("LAPS", "${circuit.lapCount ?: "–"}", F1Red, Modifier.weight(1f))
-                F1StatCell("DISTANCE", circuit.totalDistance ?: "–", F1Orange, Modifier.weight(1f))
+            // Csak a pályahossz jelenik meg
+            Row(Modifier.fillMaxWidth(), Arrangement.Center) {
+                F1StatCell("TRACK LENGTH", circuit.trackLength ?: "–", F1Gold, Modifier)
             }
             if (circuit.lastFivePoles.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))

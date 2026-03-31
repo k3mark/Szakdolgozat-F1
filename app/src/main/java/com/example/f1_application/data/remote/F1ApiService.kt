@@ -15,14 +15,12 @@ interface F1ApiService {
         @Query("pageSize") pageSize: Int
     ): SeasonTeamsResponse
 
-    // JAVÍTVA: Az új végpont használata seasonId-vel
     @GET("v2/grands-prix")
     suspend fun getGrandsPrix(
         @Query("seasonId") seasonId: String,
         @Query("pageSize") pageSize: Int
     ): SeasonRacesResponse
 
-    // JAVÍTVA: pageNumber hozzáadva a 79 pálya lekéréséhez
     @GET("v2/circuits")
     suspend fun getCircuits(
         @Query("pageSize") pageSize: Int,

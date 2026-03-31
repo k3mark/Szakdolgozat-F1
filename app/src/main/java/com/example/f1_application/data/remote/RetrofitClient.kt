@@ -17,7 +17,7 @@ object RetrofitClient {
     //private const val API_KEY = "62825d6271msh98fce679e447cb5p1963c2jsn225f2eca671b" //keme2.1.2
     //private const val API_KEY = "90890141b8mshcc5b61f37a7b2d7p176738jsnf0eba064f2e0" //madi
     //private const val API_KEY = "d675682818msh47b79e79773e8e9p1a3330jsn03709af21e1b" //talian
-    //private const val API_KEY = "9ca5b4a22fmshe79780dc5922051p1b2510jsnf54b32176287" // lau
+    //private const val API_KEY = "9ca5b4a22fmshe79780dc5922051p1b2510jsnf54b32176287" //lau
     //private const val API_KEY = "2099949572msh2da155e905dddd9p1c3f0djsn19549b68ef30" //fazek
     //private const val API_KEY = "8f20c228ffmshb17d0fcfe9f670dp113963jsn4006487994fa" //simi08
     //private const val API_KEY = "e2f81e717fmsh4825fc28a23dc83p13e7a1jsneeea6ad7dc7f" //simi0108

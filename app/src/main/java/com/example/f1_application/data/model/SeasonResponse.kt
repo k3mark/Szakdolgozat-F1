@@ -15,10 +15,7 @@ data class HypraceRace(
     val poleman: HypraceResultDriver? = null,
     val poleTime: String? = null,
     val trackLength: String? = null,
-    val lapCount: Int? = null,
-    val totalDistance: String? = null,
-    val circuit: HypraceCircuit? = null,
-    val laps: Int? = null
+    val circuit: HypraceCircuit? = null
 )
 
 data class HypraceCircuit(
@@ -33,7 +30,7 @@ data class HypraceDriverStanding(
     val points: Double?,
     val driverId: String?,
     val driverName: String?,
-    val teamName: String?  // ← ezt add hozzá
+    val teamName: String?
 )
 data class HypraceConstructorStanding(val position: Int?, val points: Double?, val teamId: String?, val teamName: String?)
 data class HypraceTeam(val id: String?, val name: String?, val drivers: List<HypraceDriver> = emptyList())

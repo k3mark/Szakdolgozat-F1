@@ -8,7 +8,7 @@ data class RaceEntity(
     @PrimaryKey val id: String,
     val name: String?,
     val officialName: String?,
-    val circuitId: String?, // Ez kapcsolja össze a csillagot a pályával
+    val circuitId: String?,
     val startDate: String?,
     val endDate: String?,
     val status: String?,
@@ -20,7 +20,5 @@ data class RaceEntity(
     val p2Name: String? = null,
     val p3Name: String? = null,
     val trackLength: String? = null,
-    val lapCount: Int? = null,
-    val totalDistance: String? = null,
     val poleTime: String? = null
 )

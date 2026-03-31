@@ -87,7 +87,7 @@ class F1Repository(context: Context) {
 
             val entities = apiRaces.map { race ->
                 val circuitInfo = allCircuits.find { it.id == race.circuitId }
-                race.toEntity(year, driverMap, circuitInfo, race.laps ?: 50)
+                race.toEntity(year, driverMap, circuitInfo)
             }
             if (entities.isNotEmpty()) dao.insertRaces(entities)
             dao.getRacesByYear(year).map { it.toHypraceRace() }
@@ -175,9 +175,12 @@ class F1Repository(context: Context) {
     suspend fun clearSearchHistory() = searchHistoryDao.clearAll()
 
     // --- MAPPING ---
-    private fun HypraceRace.toEntity(year: Int, driverMap: Map<String, String>, circuitInfo: CircuitEntity?, lapsCount: Int?): RaceEntity {
+    private fun HypraceRace.toEntity(
+        year: Int,
+        driverMap: Map<String, String>,
+        circuitInfo: CircuitEntity?
+    ): RaceEntity {
         val m = circuitInfo?.trackSize ?: 0
-        val l = lapsCount ?: 0
         return RaceEntity(
             id = id ?: "",
             name = raceName,
@@ -194,8 +197,6 @@ class F1Repository(context: Context) {
             p2Name = driverMap[podium?.getOrNull(1)?.driverId],
             p3Name = driverMap[podium?.getOrNull(2)?.driverId],
             trackLength = if (m > 0) "%.3f km".format(Locale.US, m / 1000.0) else null,
-            lapCount = if (l > 0) l else null,
-            totalDistance = if (m > 0 && l > 0) "%.3f km".format(Locale.US, (m * l) / 1000.0) else null,
             poleTime = poleTime
         )
     }
@@ -217,9 +218,7 @@ class F1Repository(context: Context) {
         ),
         poleman = polemanName?.let { HypraceResultDriver(driverName = it) },
         poleTime = poleTime,
-        trackLength = trackLength,
-        lapCount = lapCount,
-        totalDistance = totalDistance
+        trackLength = trackLength
     )
 
     suspend fun getDriverStats(q: String): DriverStats? {
@@ -268,8 +267,6 @@ class F1Repository(context: Context) {
         return CircuitStats(
             circuitName = combinedName,
             trackLength = latest.trackLength,
-            lapCount = latest.lapCount,
-            totalDistance = latest.totalDistance,
             lastFivePoles = allRaces
                 .filter { it.polemanName != null }
                 .distinctBy { it.year }
@@ -320,8 +317,6 @@ class F1Repository(context: Context) {
             circuitName = if (latest.name?.contains(latest.officialName ?: "", true) == true) latest.name!!
             else "${latest.name} (${latest.officialName})",
             trackLength = latest.trackLength,
-            lapCount = latest.lapCount,
-            totalDistance = latest.totalDistance,
             lastFivePoles = allRaces.filter { it.polemanName != null }.take(5).map {
                 PolemanInfo(it.year, it.polemanName!!, it.poleTime)
             }
