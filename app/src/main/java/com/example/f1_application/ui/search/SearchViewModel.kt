@@ -27,7 +27,7 @@ class SearchViewModel(private val repository: F1Repository) : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // Előzmények Flow-ból StateFlow-vá alakítva
+
     val searchHistory: StateFlow<List<SearchHistoryEntity>> =
         repository.getSearchHistory()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -40,7 +40,7 @@ class SearchViewModel(private val repository: F1Repository) : ViewModel() {
         val trimmed = query.trim()
         if (trimmed.isEmpty()) return
 
-        // Ha előzményből jött, töltse be a query mezőbe is
+
         _searchQuery.value = trimmed
 
         viewModelScope.launch {

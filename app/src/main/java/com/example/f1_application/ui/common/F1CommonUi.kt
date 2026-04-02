@@ -62,17 +62,12 @@ fun F1Card(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(F1Surface)
-            .border(
-                width = 1.dp,
-                color = F1Border,
-                shape = RoundedCornerShape(8.dp)
-            )
+            .border(1.dp, F1Border, RoundedCornerShape(8.dp))
     ) {
-        // Bal oldali piros csík
         Box(
             modifier = Modifier
                 .width(3.dp)
-                .fillMaxHeight()
+                .matchParentSize()
                 .background(accentColor)
         )
         Column(

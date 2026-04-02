@@ -104,7 +104,9 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
                         .border(1.dp, F1Red.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         F1Badge("NEXT GRAND PRIX", color = F1Red)
@@ -143,21 +145,17 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
             F1SectionHeader("FAVORITE TEAM")
             if (favHistory.isNotEmpty()) {
                 val current = favHistory.first()
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(F1Surface)
-                        .border(1.dp, F1Border, RoundedCornerShape(8.dp))
-                ) {
-                    Box(Modifier.width(3.dp).fillMaxHeight().background(F1Gold))
-                    Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 14.dp, bottom = 14.dp)) {
-                        Text(favTeamName ?: "Unknown team", style = MaterialTheme.typography.headlineSmall, color = F1TextPrim, fontWeight = FontWeight.Black)
-                        Spacer(Modifier.height(12.dp))
-                        Row(Modifier.fillMaxWidth()) {
-                            F1DataTile("POINTS (2026)", "${current.points.toInt()} PTS", F1Gold, Modifier.weight(1f))
-                            F1DataTile("POSITION", "${current.position}. PLACE", F1TextPrim, Modifier.weight(1f))
-                        }
+                F1Card(accentColor = F1Surface) {
+                    Text(
+                        favTeamName ?: "Unknown team",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = F1TextPrim,
+                        fontWeight = FontWeight.Black
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Row(Modifier.fillMaxWidth()) {
+                        F1DataTile("POINTS (2026)", "${current.points.toInt()} PTS", F1Gold, Modifier.weight(1f))
+                        F1DataTile("POSITION", "${current.position}. PLACE", F1TextPrim, Modifier.weight(1f))
                     }
                 }
             } else F1EmptyState("No favorite team set.\nStar one in Standings!")
@@ -177,11 +175,27 @@ fun HomeScreen(username: String, repository: F1Repository, navController: NavCon
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                        Text("TIME LEFT UNTIL FAVORITE RACE", style = MaterialTheme.typography.labelLarge, color = F1TextHint, textAlign = TextAlign.Center)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "TIME LEFT UNTIL FAVORITE RACE",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = F1TextHint,
+                            textAlign = TextAlign.Center
+                        )
                         Spacer(Modifier.height(6.dp))
                         val alpha = pulsingAlpha()
-                        Text(favTrackTime, style = MaterialTheme.typography.displaySmall.copy(fontFamily = FontFamily.Monospace), color = F1Orange.copy(alpha = alpha), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                        Text(
+                            favTrackTime,
+                            style = MaterialTheme.typography.displaySmall.copy(
+                                fontFamily = FontFamily.Monospace
+                            ),
+                            color = F1Orange.copy(alpha = alpha),
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             } else F1EmptyState("No favorite track set.\nStar one in Calendar!")

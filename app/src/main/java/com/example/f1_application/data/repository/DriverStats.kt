@@ -6,8 +6,9 @@ data class DriverStats(
     val currentTeam: String,
     val wins: Int,
     val podiums: Int,
-    val totalPoles: Int, // Kiszámolt érték a futamok alapján
+    val totalPoles: Int,
     val totalPoints: Double,
     val bestPosition: Int,
     val activeYears: String
 )
+
