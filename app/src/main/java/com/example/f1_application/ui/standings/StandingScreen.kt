@@ -54,7 +54,6 @@ fun StandingsScreen(username: String, repository: F1Repository, navController: N
             .background(F1Dark)
     ) {
         // ── HEADER ───────────────────────────────────────────────
-        // A header Column-t cseréld le erre:
         Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {

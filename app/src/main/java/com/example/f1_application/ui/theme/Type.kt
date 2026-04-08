@@ -7,41 +7,41 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 val Typography = Typography(
-    // Óriás visszaszámláló / timer
+
     displayLarge = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Black,
         fontSize = 48.sp,
         letterSpacing = 2.sp
     ),
-    // Visszaszámláló
+
     displaySmall = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
         letterSpacing = 1.sp
     ),
-    // Oldal főcím
+
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Black,
         fontSize = 24.sp,
         letterSpacing = 3.sp
     ),
-    // Szekció cím
+
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 20.sp,
         letterSpacing = 1.sp
     ),
-    // Kártya főcím
+
     headlineSmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 18.sp
     ),
-    // Kártya alcím / név
+
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
@@ -57,7 +57,6 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 13.sp
     ),
-    // Szöveg
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
@@ -73,7 +72,6 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp
     ),
-    // Uppercase label
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,

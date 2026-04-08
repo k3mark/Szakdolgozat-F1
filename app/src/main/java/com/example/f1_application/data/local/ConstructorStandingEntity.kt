@@ -8,7 +8,7 @@ data class ConstructorStandingEntity(
     @PrimaryKey(autoGenerate = true) val localId: Int = 0,
     val seasonYear: Int,
     val position: Int?,
-    val points: Double?, // Double a félpontok miatt
+    val points: Double?,
     val teamId: String?,
     val teamName: String?
 )

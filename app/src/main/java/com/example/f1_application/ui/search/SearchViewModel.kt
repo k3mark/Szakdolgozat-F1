@@ -52,7 +52,7 @@ class SearchViewModel(private val repository: F1Repository) : ViewModel() {
             _driverResult.value = driverMatch
             _circuitResult.value = circuitMatch
 
-            // Mentés az előzményekbe
+
             val resultType = when {
                 driverMatch != null -> "DRIVER"
                 circuitMatch != null -> "CIRCUIT"

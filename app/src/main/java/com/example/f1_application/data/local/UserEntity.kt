@@ -7,9 +7,9 @@ data class UserEntity(
     @PrimaryKey val username: String,
     val password: String,
     val favoriteDriverId: String? = null,
-    val favoriteDriverName: String? = null, // ÚJ: Név mentése
+    val favoriteDriverName: String? = null,
     val favoriteTeamId: String? = null,
-    val favoriteTeamName: String? = null,   // ÚJ: Név mentése
+    val favoriteTeamName: String? = null,
     val favoriteTrackId: String? = null,
-    val favoriteTrackName: String? = null   // ÚJ: Név mentése
+    val favoriteTrackName: String? = null
 )

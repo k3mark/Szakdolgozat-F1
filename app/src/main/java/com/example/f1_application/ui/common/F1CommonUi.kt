@@ -18,14 +18,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.f1_application.ui.theme.*
 
-// ─── Állandó színek (közvetlenül a theme-ből) ───────────────────────
+
 val CardBg    = F1Surface
 val CardBg2   = F1Surface2
 val Border    = F1Border
 val RedAccent = F1Red
 val Gold      = F1Gold
 
-// ─── F1 stílusú szekció fejléc (pl. "KEDVENC PILÓTÁD") ─────────────
+
 @Composable
 fun F1SectionHeader(title: String, modifier: Modifier = Modifier) {
     Row(
@@ -50,7 +50,7 @@ fun F1SectionHeader(title: String, modifier: Modifier = Modifier) {
     }
 }
 
-// ─── F1 kártya alap (sötét háttér, piros bal border) ───────────────
+
 @Composable
 fun F1Card(
     modifier: Modifier = Modifier,
@@ -77,7 +77,7 @@ fun F1Card(
     }
 }
 
-// ─── Stat cella (GYŐZELEM / 77) ──────────────────────────────────────
+
 @Composable
 fun F1StatCell(
     label: String,
@@ -105,7 +105,7 @@ fun F1StatCell(
     }
 }
 
-// ─── Pill badge (pl. "Befejezve") ───────────────────────────────────
+
 @Composable
 fun F1Badge(
     text: String,
@@ -128,7 +128,7 @@ fun F1Badge(
     }
 }
 
-// ─── Pulzáló animáció (visszaszámlálóhoz) ───────────────────────────
+
 @Composable
 fun pulsingAlpha(): Float {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -144,7 +144,7 @@ fun pulsingAlpha(): Float {
     return alpha
 }
 
-// ─── Vízszintes elválasztó F1 stílusban ─────────────────────────────
+
 @Composable
 fun F1Divider(modifier: Modifier = Modifier) {
     HorizontalDivider(

@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Az app mindig sötét módban fut - ez az F1 identitás
+
 private val F1ColorScheme = darkColorScheme(
     primary            = F1Red,
     onPrimary          = F1TextPrim,

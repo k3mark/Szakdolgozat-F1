@@ -38,7 +38,6 @@ class CompareViewModel(private val repository: F1Repository) : ViewModel() {
     private val _errorB = MutableStateFlow<String?>(null)
     val errorB: StateFlow<String?> = _errorB
 
-    // Előzmények a gyors betöltéshez
     val searchHistory: StateFlow<List<SearchHistoryEntity>> =
         repository.getSearchHistory()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

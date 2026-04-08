@@ -30,7 +30,6 @@ import androidx.navigation.NavController
 import com.example.f1_application.data.model.CircuitStats
 import com.example.f1_application.data.model.DriverStats
 import com.example.f1_application.data.repository.F1Repository
-import com.example.f1_application.ui.common.*
 import com.example.f1_application.ui.navigation.Screen
 import com.example.f1_application.ui.theme.*
 import java.text.SimpleDateFormat
@@ -226,7 +225,7 @@ fun DriverResultCard(driver: DriverStats) {
     }
 }
 
-// A SearchScreen.kt-ban csak a CircuitResultCard composable-t cseréld le erre:
+
 
 @Composable
 fun CircuitResultCard(circuit: CircuitStats) {

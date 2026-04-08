@@ -12,11 +12,6 @@ import java.time.*
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = F1Repository(application)
 
-    private val _nextRace = MutableStateFlow<HypraceRace?>(null)
-    val nextRace: StateFlow<HypraceRace?> = _nextRace
-    private val _countdown = MutableStateFlow("Betöltés...")
-    val countdown: StateFlow<String> = _countdown
-
     val favoriteDriver = MutableStateFlow<DriverStats?>(null)
     val favoriteTeamName = MutableStateFlow<String?>(null)
     val favoriteTeamHistory = MutableStateFlow<List<TeamHistory>>(emptyList())
@@ -25,6 +20,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private var globalCountdownJob: Job? = null
     private var favoriteCountdownJob: Job? = null
+
+
+    private val _nextRace = MutableStateFlow<HypraceRace?>(null)
+    val nextRace: StateFlow<HypraceRace?> = _nextRace
+    private val _countdown = MutableStateFlow("Betöltés...")
+    val countdown: StateFlow<String> = _countdown
 
     init { loadNextRace() }
 
@@ -48,14 +49,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val user = repository.getUser(username) ?: return@launch
 
-            // JAVÍTVA: Ha user.favoriteDriverId null, a mező is null lesz, így eltűnik a régi adat
+
             favoriteDriver.value = user.favoriteDriverId?.let { repository.getDriverStatsById(it) }
             favoriteTeamName.value = user.favoriteTeamName
 
-            // JAVÍTVA: Csapathistória kiürítése, ha nincs kedvenc csapat
+
             favoriteTeamHistory.value = user.favoriteTeamId?.let { repository.getTeamHistory(it, 2026) } ?: emptyList()
 
-            // JAVÍTVA: Pálya adatok és visszaszámláló törlése
+
             val circuitStats = user.favoriteTrackId?.let { repository.getCircuitStatsById(it) }
             favoriteCircuit.value = circuitStats
 

@@ -12,7 +12,7 @@ data class RaceTable(
     @SerializedName("Races") val races: List<Race>
 )
 
-// A tényleges futam adatai
+
 data class Race(
     @SerializedName("season") val season: String,
     @SerializedName("raceName") val raceName: String,

@@ -22,7 +22,7 @@ object RetrofitClient {
     val apiService: F1ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(okHttpClient) // Most már a típus megegyezik a várttal
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(F1ApiService::class.java)

@@ -29,7 +29,7 @@ class CalendarViewModel(private val repository: F1Repository) : ViewModel() {
     }
 }
 
-// ÚJ FACTORY A REPOSITORY ÁTADÁSÁHOZ
+
 class CalendarViewModelFactory(private val repository: F1Repository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CalendarViewModel::class.java)) {

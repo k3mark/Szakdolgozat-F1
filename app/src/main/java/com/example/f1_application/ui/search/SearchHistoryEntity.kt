@@ -7,6 +7,6 @@ import androidx.room.PrimaryKey
 data class SearchHistoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val query: String,
-    val resultType: String, // "DRIVER" vagy "CIRCUIT" vagy "NONE"
+    val resultType: String,
     val timestamp: Long = System.currentTimeMillis()
 )
